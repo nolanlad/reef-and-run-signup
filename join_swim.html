@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swim Activities</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: #007bff;
+      color: white;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .create-button {
+      padding: 15px 30px;
+      font-size: 18px;
+      color: white;
+      background-color: #28a745;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: background-color 0.3s;
+    }
+
+    .create-button:hover {
+      background-color: #218838;
+    }
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      background: #ffffff;
+      width: 300px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .join-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .end-btn {
+      background-color: #f44336;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .dialog {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      z-index: 1000;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .dialog h2 {
+      margin-bottom: 20px;
+    }
+
+    .dialog input {
+      width: 95%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .dialog-buttons {
+      text-align: right;
+    }
+
+    .dialog-buttons button {
+      padding: 8px 16px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .dialog-buttons .cancel-btn {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .dialog-buttons .submit-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .dialog-buttons button:hover {
+      opacity: 0.9;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    .message {
+      font-size: 20px;
+      color: red;
+      text-align: center;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Swim Activities</h1>
+</header>
+
+<div class="main-content">
+  <!-- Create Swim Button -->
+  <button class="create-button" onclick="openDialog()">Create Swim</button>
+
+  <!-- Swim Cards -->
+  <div id="swim-container"></div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay"></div>
+
+<!-- Dialog Box -->
+<div class="dialog" id="createSwimDialog">
+  <h2>Name Your Swim</h2>
+  <input type="text" id="swimName" placeholder="Enter swim name" />
+  <div class="dialog-buttons">
+    <button class="cancel-btn" onclick="closeDialog()">Cancel</button>
+    <button class="submit-btn" onclick="submitSwim()">Submit</button>
+  </div>
+</div>
+
+<script>
+  // Simulated API response for swims
+  
+
+  const landing_page = '/modern_swimmer2'
+
+  async function delete_swim(swim_name){
+    fetch('http://localhost:3000/swims/close', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({'swim_name':swim_name}),
+        })
+  }
+  const swims = [
+    { swim_name: "Morning Swim" },
+    { swim_name: "Evening Swim" },
+    { swim_name: "Weekend Swim" }
+  ];
+
+  // Display swims
+  const swimContainer = document.getElementById('swim-container');
+
+  function displaySwims(swims) {
+    swimContainer.innerHTML = "";
+    if (swims.length === 0) {
+      swimContainer.innerHTML = '<div class="message">No active swims</div>';
+    } else {
+      swims.forEach(swim => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.id = swim.swim_name
+
+        const swimName = document.createElement('span');
+        swimName.textContent = swim.swim_name;
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'card-buttons';
+
+        // Join button
+        const joinButton = document.createElement('button');
+        joinButton.className = 'join-btn';
+        joinButton.textContent = 'Join';
+        joinButton.onclick = () => {
+            joinSwim(swim.swim_name);
+            
+        };
+
+        // End button
+        const endButton = document.createElement('button');
+        endButton.className = 'end-btn';
+        endButton.textContent = 'End';
+        endButton.onclick = () => {
+          delete_swim(swim.swim_name);
+          document.getElementById(swim.swim_name).remove();
+        };
+
+        buttonContainer.appendChild(joinButton);
+        buttonContainer.appendChild(endButton);
+        card.appendChild(swimName);
+        card.appendChild(buttonContainer);
+        swimContainer.appendChild(card);
+      });
+    }
+  }
+
+  // Initial render of swims
+  fetch('http://localhost:3000/swims').then(r=>{
+    r.json().then(swims=>{
+        displaySwims(swims);
+    })
+  })
+
+  // Dialog functionality
+  function openDialog() {
+    document.getElementById('createSwimDialog').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  }
+
+  function closeDialog() {
+    document.getElementById('createSwimDialog').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+
+  async function submitSwim() {
+    swim_name = document.getElementById('swimName').value
+    fetch('http://localhost:3000/swims', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({'swim_name':swim_name}),
+    }).then(resp=>{
+        if(resp.status === 201){
+            window.location.href = window.location.origin + landing_page
+        }
+    })
+  }
+  async function joinSwim(swim_name) {
+    // swim_name = document.getElementById('swimName').value
+    fetch('http://localhost:3000/swims', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({'swim_name':swim_name}),
+    }).then(resp=>{
+        if(resp.status === 500){
+            alert('server error') 
+        }
+        else{
+            window.location.href = window.location.origin + landing_page
+        }
+    })
+  }
+</script>
+
+</body>
+</html>

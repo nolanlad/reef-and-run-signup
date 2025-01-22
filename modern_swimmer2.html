@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selector</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        /* Top banner styling */
+        .top-banner {
+            display: flex;
+            height: 100px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .top-banner div {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        .red {
+            background-color: #ff6b6b;
+        }
+        .green {
+            background-color: #51cf66;
+        }
+        .blue {
+            background-color: #339af0;
+        }
+        /* Body styling */
+        .body-content {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 100px);
+            padding-top: 20px;
+        }
+        /* .search-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .search-bar {
+            width: 60%;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border 0.3s ease;
+            position: relative;
+            z-index: 5;
+        }
+        .search-bar:focus {
+            border: 1px solid #339af0;
+            outline: none;
+        }
+        .suggestions {
+            position: absolute;
+            top: 50px;
+            width: 60%;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 4;
+            border-radius: 0 0 8px 8px;
+            display: none;
+        }
+        .suggestions div {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .suggestions div:last-child {
+            border-bottom: none;
+        }
+        .suggestions div:hover {
+            background-color: #f1f1f1;
+        } */
+        .search-section {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .search-bar {
+        width: 60%;
+        padding: 12px 20px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: border 0.3s ease;
+        z-index: 5;
+        position: relative;
+    }
+    .search-bar:focus {
+        border: 1px solid #339af0;
+        outline: none;
+    }
+    .suggestions {
+            position: relative;
+            top: -15px;
+            left: 0;
+            right: 0;
+            border: 1px solid #ccc;
+            border-top: none;
+            background: #fff;
+            z-index: 5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .suggestions div {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .suggestions div:hover {
+            background: #f0f0f0;
+        }
+        .no-suggestions {
+            padding: 10px;
+            color: #888;
+        }
+        .form-section {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        .form-container {
+            width: 40%;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        .form-container input{
+            width: calc(100% - 15px);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border 0.3s ease;
+        }
+        .form-container select {
+            width: calc(100% - 10px);
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border 0.3s ease;
+        }
+        .form-container input:focus,
+        .form-container select:focus {
+            border: 1px solid #339af0;
+            outline: none;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            background-color: #339af0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .form-container button:hover {
+            background-color: #1d7ed6;
+            transform: scale(1.02);
+        }
+        .form-container button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <div class="red" id="swimmerCount"></div>
+        <div class="green" id="payment"></div>
+        <div class="blue" id="bib"></div>
+    </div>
+    <!-- Main Body -->
+    <div class="body-content">
+        <!-- Search Section -->
+        <!-- <div class="form-section">
+            <input type="text" id="searchBar" class="search-bar" placeholder="Search for something...">
+            <div id="suggestions" class="suggestions">
+               
+            </div>
+        </div> -->
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="form-container">
+                <label for="name">Search</label>
+                <input type="text" id="searchBar" name="seach" placeholder="Search...">
+                <div class="suggestions" id="suggestions"></div>
+
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+                <label for="birthday">Birthday</label>
+                <input type="date" id="birthday" name="birthday" required>
+
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="" disabled selected>Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+                
+                <label for="race">Select race</label>
+                <select id="race" name="race" required>
+                    <option value="" disabled selected>Choose an option</option>
+                    <option value="500m">500m</option>
+                    <option value="1000m">1000m</option>
+                    <option value="1mile">1 Mile</option>
+                    <option value="biath">Biathalon</option>
+                </select>
+
+                <button onclick="button_click()">Submit</button>
+            </form>
+        </div>
+    </div>
+    <script>
+
+        async function get_swimmer_info(name){
+            fetch(`http://localhost:3000/userinfo?name=${name}`).then(x=>{
+                x.json().then(x=>{
+                    console.log(x)
+                    return x
+                })
+            })
+        }
+
+        function upload_swimmer(name,bday,race,gender){
+            fetch('http://localhost:3000/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    birthday: bday,
+                    race: race,
+                    gender: gender
+                })
+            })
+            .then(x=>{
+                x.json().then(x=>{
+                    document.getElementById('swimmerCount').innerText = `Number of Swimmers ${x.total_swimmers}`
+                    document.getElementById('bib').innerText = `Swimmer Bib Number ${x.bib_num}`
+                    console.log(x)
+                })
+            })
+        }
+
+        function convertDateToISO(dateString) {
+            // Split the input string into components
+            const [month, day, year] = dateString.split('/');
+            
+            // Return the date in the 'YYYY-MM-DD' format
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+    </script>
+
+    <script>
+        
+        var bib_num = 11
+        var swimmer_count = 0
+
+        function button_click(){
+            console.log('update')
+            name = document.getElementById('name').value;
+            bday = document.getElementById('birthday').value;
+            gender = document.getElementById('gender').value
+            race = document.getElementById('race').value
+            upload_swimmer(name,bday,race,gender)
+
+            // swimmer_count+=1
+            // bib_num+=1
+            document.getElementById('name').value = ''
+            document.getElementById('birthday').value = ''
+            document.getElementById('gender').value = ''
+            document.getElementById('race').value = ''
+            document.getElementById('searchBar').value = ''
+            
+            // document.getElementById('swimmerCount').innerText = `Number of swimmers ${swimmer_count}`
+            // document.getElementById('bib').innerText = `Swimmer Bib Number ${bib_num}`
+
+        }
+    
+        const searchBar = document.getElementById("searchBar");
+        const suggestionsContainer = document.getElementById("suggestions");
+    
+        searchBar.addEventListener("input", () => {
+            const query = searchBar.value.toLowerCase();
+            suggestionsContainer.innerHTML = "";
+    
+            if (query === "") {
+                return;
+            }
+
+            const baseUrl = 'http://localhost:3000/search';
+
+            // Parameters to append
+            const params = {
+            string: query
+            };
+
+            // Construct the query string
+            const queryString = new URLSearchParams(params).toString();
+
+            // Full URL with query parameters
+            const url = `${baseUrl}?${queryString}`;
+            fetch(url).then(x=>{
+                x.json().then(x=>{
+                    filteredSuggestions = []
+                    for(i of x){
+                        filteredSuggestions.push(i.name)
+                    }
+                    if (filteredSuggestions.length === 0) {
+                        suggestionsContainer.innerHTML = "<div class='no-suggestions'>No suggestions found</div>";
+                    } else {
+                        filteredSuggestions.forEach(suggestion => {
+                            const div = document.createElement("div");
+                            div.textContent = suggestion;
+                            div.addEventListener("click", () => {
+                                console.log('click')
+                                document.getElementById('name').value = suggestion
+                                fetch(`http://localhost:3000/userinfo?name=${suggestion}`).then(x=>{
+                                    x.json().then(x=>{
+                                        document.getElementById('birthday').value = x.birthday.split('T')[0]
+                                        console.log('bday',x.bday)
+                                        document.getElementById('gender').value = x.gender
+                                })
+            })
+
+                                searchBar.value = suggestion;
+                                suggestionsContainer.innerHTML = "";
+                            });
+                            suggestionsContainer.appendChild(div);
+                        });
+                    }
+                    // console.log(x)
+                });
+            });
+        });
+    
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", (event) => {
+            if (!event.target.closest(".search-container")) {
+                suggestionsContainer.innerHTML = "";
+            }
+        });
+    </script>
+</body>
+</html>
