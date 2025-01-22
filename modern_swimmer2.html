@@ -261,7 +261,7 @@
     <script>
 
         async function get_swimmer_info(name){
-            fetch(`http://localhost:3000/userinfo?name=${name}`).then(x=>{
+            fetch(`https://3.147.83.2/userinfo?name=${name}`).then(x=>{
                 x.json().then(x=>{
                     console.log(x)
                     return x
@@ -270,7 +270,7 @@
         }
 
         function upload_swimmer(name,bday,race,gender){
-            fetch('http://localhost:3000/users', {
+            fetch('http://3.147.83.2/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -337,7 +337,7 @@
                 return;
             }
 
-            const baseUrl = 'http://localhost:3000/search';
+            const baseUrl = 'http://3.147.83.2/search';
 
             // Parameters to append
             const params = {
@@ -364,7 +364,7 @@
                             div.addEventListener("click", () => {
                                 console.log('click')
                                 document.getElementById('name').value = suggestion
-                                fetch(`http://localhost:3000/userinfo?name=${suggestion}`).then(x=>{
+                                fetch(`http://3.147.83.2/userinfo?name=${suggestion}`).then(x=>{
                                     x.json().then(x=>{
                                         document.getElementById('birthday').value = x.birthday.split('T')[0]
                                         console.log('bday',x.bday)
