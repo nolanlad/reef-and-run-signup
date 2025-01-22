@@ -187,7 +187,7 @@
   const landing_page = '/modern_swimmer2'
 
   async function delete_swim(swim_name){
-    fetch('http://localhost:3000/swims/close', {
+    fetch('https://3.147.83.2/swims/close', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -248,7 +248,7 @@
   }
 
   // Initial render of swims
-  fetch('http://localhost:3000/swims').then(r=>{
+  fetch('https://3.147.83.2/swims').then(r=>{
     r.json().then(swims=>{
         displaySwims(swims);
     })
@@ -267,7 +267,7 @@
 
   async function submitSwim() {
     swim_name = document.getElementById('swimName').value
-    fetch('http://localhost:3000/swims', {
+    fetch('https://3.147.83.2/swims', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -281,7 +281,7 @@
   }
   async function joinSwim(swim_name) {
     // swim_name = document.getElementById('swimName').value
-    fetch('http://localhost:3000/swims', {
+    fetch('https://3.147.83.2/swims', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
