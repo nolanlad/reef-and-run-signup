@@ -260,10 +260,15 @@
                 </select>
 
                 <button onclick="button_click()">Submit</button>
+                <label ></label>
+                <button onclick="startRace()">Start Race</button>
             </form>
         </div>
     </div>
     <script>
+        function startRace(){
+            window.location.href = window.location.origin + '/start_race';
+        }
         async function get_swim_name(){
             fetch('/swims/current').then(x=>{
                 x.json().then(x=>{
