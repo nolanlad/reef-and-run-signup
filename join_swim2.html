@@ -6,17 +6,21 @@
   <title>Swim Activities</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      height: 100vh;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      font-family: "Poppins", sans-serif;
+      text-align: center;
+      padding-top: 20px;
     }
 
     header {
-      text-align: center;
-      padding: 20px;
-      background-color: #007bff;
-      color: white;
+      font-size: 2.5em;
+      margin-bottom: 20px;
     }
 
     .main-content {
@@ -24,35 +28,40 @@
       flex-direction: column;
       align-items: center;
       padding: 20px;
+      width: 100%;
     }
 
     .create-button {
+      background: #ff6b6b;
+      border: none;
       padding: 15px 30px;
       font-size: 18px;
-      color: white;
-      background-color: #28a745;
-      border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 20px;
-      transition: background-color 0.3s;
+      color: white;
+      transition: background 0.3s;
     }
 
     .create-button:hover {
-      background-color: #218838;
+      background: #ff4757;
     }
 
     .card {
-      border: 1px solid #ccc;
+      background: rgba(255, 255, 255, 0.2);
       padding: 15px;
-      margin: 15px 0;
+      margin: 8px;
       border-radius: 8px;
-      background: #ffffff;
-      width: 300px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .card span {
+      flex-grow: 1;
+      text-align: center;
     }
 
     .card-buttons {
@@ -60,25 +69,44 @@
       gap: 10px;
     }
 
-    button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .join-btn {
-      background-color: #4caf50;
-      color: white;
-    }
-
     .end-btn {
-      background-color: #f44336;
+      background: #ff6b6b;
+      border: none;
       color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .end-btn:hover {
+      background: #ff4757;
+    }
+    .join-btn{
+      background: #65ca18;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .join-btn:hover {
+      background: #72f60d;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
     }
 
     .dialog {
@@ -134,17 +162,6 @@
       opacity: 0.9;
     }
 
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
-    }
-
     .message {
       font-size: 20px;
       color: red;
@@ -181,20 +198,18 @@
 </div>
 
 <script>
-  // Simulated API response for swims
-  
+  const landing_page = '/modern_swimmer2';
 
-  const landing_page = '/modern_swimmer2'
-
-  async function delete_swim(swim_name){
+  async function delete_swim(swim_name) {
     fetch('/swims/close', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({'swim_name':swim_name}),
-        })
+        body: JSON.stringify({'swim_name': swim_name}),
+    })
   }
+
   const swims = [
     { swim_name: "Morning Swim" },
     { swim_name: "Evening Swim" },
@@ -212,7 +227,7 @@
       swims.forEach(swim => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.id = swim.swim_name
+        card.id = swim.swim_name;
 
         const swimName = document.createElement('span');
         swimName.textContent = swim.swim_name;
@@ -226,7 +241,6 @@
         joinButton.textContent = 'Join';
         joinButton.onclick = () => {
             joinSwim(swim.swim_name);
-            
         };
 
         // End button
@@ -248,9 +262,9 @@
   }
 
   // Initial render of swims
-  fetch('/swims').then(r=>{
-    r.json().then(swims=>{
-        displaySwims(swims);
+  fetch('/swims').then(r => {
+    r.json().then(swims => {
+      displaySwims(swims);
     })
   })
 
@@ -266,34 +280,33 @@
   }
 
   async function submitSwim() {
-    swim_name = document.getElementById('swimName').value
+    swim_name = document.getElementById('swimName').value;
     fetch('/swims', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({'swim_name':swim_name}),
-    }).then(resp=>{
-        if(resp.status === 201){
-            window.location.href = window.location.origin + landing_page
-        }
+      body: JSON.stringify({'swim_name': swim_name}),
+    }).then(resp => {
+      if (resp.status === 201) {
+        window.location.href = window.location.origin + landing_page;
+      }
     })
   }
+
   async function joinSwim(swim_name) {
-    // swim_name = document.getElementById('swimName').value
     fetch('/swims', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({'swim_name':swim_name}),
-    }).then(resp=>{
-        if(resp.status === 500){
-            alert('server error') 
-        }
-        else{
-            window.location.href = window.location.origin + landing_page
-        }
+      body: JSON.stringify({'swim_name': swim_name}),
+    }).then(resp => {
+      if (resp.status === 500) {
+        alert('server error');
+      } else {
+        window.location.href = window.location.origin + landing_page;
+      }
     })
   }
 </script>

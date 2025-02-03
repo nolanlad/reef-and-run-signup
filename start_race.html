@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Timer</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            padding-top: 20px;
+        }
+        button {
+            background: #ff6b6b;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #ff4757;
+        }
+        .hidden { display: none; }
+        .container {
+            position: fixed;
+            top: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 300px;
+            visibility: hidden;
+        }
+        .timer {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+        }
+        form {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%;
+            justify-content: center;
+            background: none;
+        }
+        input {
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            outline: none;
+            width: 150px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            margin: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            width: 300px;
+            font-size: 18px;
+        }
+        #entries {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 180px;
+        }
+        .error-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #d9534f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            display: none;
+            z-index: 9999;
+            max-width: 80%;
+        }
+        .error-message button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        #endButton {
+            margin-top: 15px;
+            background: #d9534f;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+        #endButton:hover {
+            background: #c9302c;
+        }
+        .dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        color: black;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 1000;
+    }
+    .hidden {
+        display: none;
+    }
+    .dialog button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+    #confirmEnd {
+        background: #d9534f;
+        color: white;
+    }
+    #cancelEnd {
+        background: #6c757d;
+        color: white;
+    }
+    </style>
+</head>
+<body>
+    <div class="error-message" id="errorMessage">
+        <span id="errorText">An error occurred. Please try again.</span>
+        <button onclick="closeErrorMessage()">×</button>
+    </div>
+    <div id="confirmDialog" class="dialog hidden">
+        <p>Are you sure you want to end the race?</p>
+        <button id="confirmEnd" onclick="endRace()">Confirm</button>
+        <button id="cancelEnd" onclick='confirmDialog.classList.add("hidden")'>Cancel</button>
+    </div>
+    <button id="startButton">Start Race</button>
+    <div id="container" class="container">
+        <div id="timer" class="timer">Time: 0s</div>
+        <form id="inputForm">
+            <input type="text" id="nameInput" placeholder="Enter bib number..." autocomplete="off">
+            <button type="submit">Submit</button>
+        </form>
+        <button id="endButton" class="hidden">End Race</button>
+    </div>
+    <div id="entries"></div>
+
+    <script>
+        async function post_time(bib_num, time) {
+            return fetch('http://localhost:3000/users/swim-time', {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 'bib_num': bib_num, 'time': time }),
+            });
+        }
+
+        function error_message(msg) {
+            const errorMessage = document.getElementById('errorMessage');
+            document.getElementById('errorText').innerText = msg;
+            errorMessage.style.display = 'block';
+        }
+
+        function closeErrorMessage() {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+        }
+
+        function endRace(){
+                window.location.href = window.location.origin + '/currentswimmers';
+            }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            let raceStarted = false;
+            let time = 0;
+            let interval;
+            const startButton = document.getElementById("startButton");
+            const endButton = document.getElementById("endButton");
+            const container = document.getElementById("container");
+            const timerDisplay = document.getElementById("timer");
+            const inputForm = document.getElementById("inputForm");
+            const nameInput = document.getElementById("nameInput");
+            const entriesDiv = document.getElementById("entries");
+
+            startButton.addEventListener("click", () => {
+                if (!raceStarted) {
+                    raceStarted = true;
+                    time = 0;
+                    entriesDiv.innerHTML = "";
+                    startButton.classList.add("hidden");
+                    endButton.classList.remove("hidden");
+                    container.style.visibility = "visible";
+                    interval = setInterval(() => {
+                        time++;
+                        timerDisplay.textContent = `Time: ${time}s`;
+                    }, 1000);
+                }
+            });
+
+            endButton.addEventListener("click", () => {
+                if (raceStarted) {
+                    confirmDialog.classList.remove("hidden");
+                }
+            });
+
+        
+
+            inputForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                let bib_num = nameInput.value.trim();
+                if (bib_num === "") return;
+                const card = document.createElement("div");
+                card.classList.add("card");
+
+                post_time(bib_num, time).then(x => {
+                    if (x.status === 200) {
+                        x.json().then(data => {
+                            card.innerHTML = `<span>${data.user.name}</span><span>${data.user.bib_num}</span><span>${time}s</span>`;
+                            entriesDiv.prepend(card);
+                        });
+                    } else {
+                        x.json().then(err => {
+                            error_message(err.error);
+                        });
+                    }
+                });
+
+                nameInput.value = "";
+            });
+        });
+    </script>
+</body>
+</html>

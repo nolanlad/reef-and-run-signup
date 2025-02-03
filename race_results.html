@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Results</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .table-container {
+            margin: 20px;
+            width: 90%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid white;
+            text-align: center;
+        }
+        th {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>Race Results</h1>
+    <div id="results"></div>
+
+    <script>
+        const dummyData = [
+            { name: "Alice", race: "100m Freestyle", swim_time: 55, bib_num: 101, birthday: "2011-06-26T00:00:00.000Z", gender: "F" },
+            { name: "Bob", race: "200m Freestyle", swim_time: 110, bib_num: 102, birthday: "1995-02-14T00:00:00.000Z", gender: "M" },
+            { name: "Charlie", race: "100m Freestyle", swim_time: 60, bib_num: 103, birthday: "1988-09-05T00:00:00.000Z", gender: "M" },
+            { name: "Dave", race: "200m Freestyle", swim_time: 105, bib_num: 104, birthday: "1972-11-20T00:00:00.000Z", gender: "M" },
+            { name: "Eve", race: "100m Freestyle", swim_time: 58, bib_num: 105, birthday: "2003-07-30T00:00:00.000Z", gender: "F" },
+            { name: "Frank", race: "200m Freestyle", swim_time: 115, bib_num: 106, birthday: "1960-04-18T00:00:00.000Z", gender: "M" },
+            { name: "Grace", race: "100m Freestyle", swim_time: 57, bib_num: 107, birthday: "1980-12-10T00:00:00.000Z", gender: "F" }
+        ];
+
+        function calculateAge(birthday) {
+            const birthDate = new Date(birthday);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function getDivision(age, gender) {
+            let bracket;
+            if (age < 18) bracket = "17/Un";
+            else if (age < 25) bracket = "18-24";
+            else if (age < 35) bracket = "25-34";
+            else if (age < 40) bracket = "35-39";
+            else if (age < 45) bracket = "40-44";
+            else if (age < 50) bracket = "45-49";
+            else if (age < 55) bracket = "50-54";
+            else if (age < 60) bracket = "55-59";
+            else if (age < 65) bracket = "60-64";
+            else if (age < 70) bracket = "65-69";
+            else if (age < 75) bracket = "70-74";
+            else if (age < 80) bracket = "75-79";
+            else bracket = "80+";
+            return `${gender}${bracket}`;
+        }
+
+        function processRaceData(data) {
+        const raceCategories = [...new Set(data.map(entry => entry.race))];
+
+        return raceCategories.map(race => {
+            let raceData = data.filter(entry => entry.race === race);
+
+            // Compute age and division
+            raceData = raceData.map(entry => ({
+                ...entry,
+                age: calculateAge(entry.birthday),
+                division: getDivision(calculateAge(entry.birthday), entry.gender)
+            }));
+
+            // Separate valid and invalid times
+            let validEntries = raceData.filter(entry => entry.swim_time !== "");
+            let invalidEntries = raceData.filter(entry => entry.swim_time === "");
+
+            // Sort valid entries by swim time (fastest to slowest)
+            validEntries.sort((a, b) => a.swim_time - b.swim_time);
+
+            // Assign overall placement for valid entries
+            validEntries.forEach((entry, index) => entry.place = index + 1);
+
+            // Assign last places to invalid entries
+            invalidEntries.forEach((entry, index) => entry.place = validEntries.length + 1 + index);
+
+            // Combine valid and invalid entries back
+            raceData = [...validEntries, ...invalidEntries];
+
+            // Female placement
+            const femaleData = validEntries.filter(entry => entry.gender === "F");
+            femaleData.forEach((entry, index) => entry.fem_place = index + 1);
+
+            // Division placement with total count
+            const divisionGroups = {};
+            validEntries.forEach(entry => {
+                if (!divisionGroups[entry.division]) {
+                    divisionGroups[entry.division] = [];
+                }
+                divisionGroups[entry.division].push(entry);
+            });
+
+            Object.values(divisionGroups).forEach(group => {
+                group.sort((a, b) => a.swim_time - b.swim_time);
+                const totalInDivision = group.length;
+                group.forEach((entry, index) => entry.division_place = `${index + 1}/${totalInDivision}`);
+            });
+
+            // Assign "Not Finished" label for invalid swim times
+            invalidEntries.forEach(entry => {
+                entry.swim_time = "Not Finished";
+                entry.fem_place = "-";
+                entry.division_place = "-";
+            });
+
+            return { race, raceData };
+        });
+    }
+
+        function displayResults(data) {
+            const resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = "";
+
+            const processedData = processRaceData(data);
+
+            processedData.forEach(({ race, raceData }) => {
+                const tableContainer = document.createElement("div");
+                tableContainer.classList.add("table-container");
+
+                const tableHTML = `
+                    <h2>${race}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Place</th>
+                                <th>Name</th>
+                                <th>Bib #</th>
+                                <th>Time (s)</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Division</th>
+                                <th>Div. Place</th>
+                                <th>Fem Place</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${raceData.map(entry => `
+                                <tr>
+                                    <td>${entry.place}</td>
+                                    <td>${entry.name}</td>
+                                    <td>${entry.bib_num}</td>
+                                    <td>${entry.swim_time}</td>
+                                    <td>${entry.age}</td>
+                                    <td>${entry.gender}</td>
+                                    <td>${entry.division}</td>
+                                    <td>${entry.division_place}</td>
+                                    <td>${entry.gender === "F" ? entry.fem_place : "-"}</td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    </table>
+                `;
+
+                tableContainer.innerHTML = tableHTML;
+                resultsContainer.appendChild(tableContainer);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch('/currentswimmers').then(x=>{
+                x.json().then(dummyData=>{
+                    displayResults(dummyData);
+                })
+            })
+            // displayResults(dummyData);
+        });
+    </script>
+</body>
+</html>

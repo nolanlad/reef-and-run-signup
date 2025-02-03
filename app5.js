@@ -90,8 +90,20 @@ app.get('/join_swim', (req, res) => {
   res.sendFile(path.join(__dirname, 'join_swim.html'));
 });
 
+app.get('/join_swim2', (req, res) => {
+  res.sendFile(path.join(__dirname, 'join_swim2.html'));
+});
+
+app.get('/start_race', (req, res) => {
+  res.sendFile(path.join(__dirname, 'start_race.html'));
+});
+
 app.get('/modern_swimmer2', (req, res) => {
   res.sendFile(path.join(__dirname, 'modern_swimmer2.html'));
+});
+
+app.get('/race_results', (req, res) => {
+  res.sendFile(path.join(__dirname, 'race_results.html'));
 });
 
 app.get('/log_times', (req, res) => {
@@ -132,6 +144,9 @@ app.get('/log_times', (req, res) => {
     } catch (error) {
       res.status(500).send({ error: "Internal Server Error", details: error });
     }
+  });
+  app.get("/swims/current", async (req, res) => {
+    res.status(200).send({'status':PrimaryUser.collection.modelName})
   });
   
   // PATCH /swims/close - Close a swim by name
@@ -297,6 +312,11 @@ app.get('/allswimmers', async (req, res) => {
     res.status(200).send(existingSecondaryUser);
 })
 
+app.get('/currentswimmers', async (req, res) => {
+  const existingPrimaryUser = await PrimaryUser.find()
+  res.status(200).send(existingPrimaryUser);
+})
+
 app.get('/search', async (req,res) =>{
     string = req.query.string;
     const query = { name: { $regex: string, $options: 'i' } };
@@ -331,7 +351,7 @@ app.get('/userinfo', async (req, res) => {
   
 
 // Start the server
-const PORT = 80;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -8,7 +8,7 @@
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9f9f9;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: #333;
         }
         /* Top banner styling */
@@ -27,7 +27,7 @@
             justify-content: center;
             font-size: 20px;
             font-weight: bold;
-            color: white;
+            color: rgb(0, 0, 0);
         }
         .red {
             background-color: #ff6b6b;
@@ -38,12 +38,16 @@
         .blue {
             background-color: #339af0;
         }
+        .grey {
+            background-color: #285776;
+        }
         /* Body styling */
         .body-content {
             display: flex;
             flex-direction: column;
             height: calc(100vh - 100px);
             padding-top: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
         }
         /* .search-section {
             flex: 1;
@@ -147,7 +151,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f9f9f9;
+            background: (135deg, #1e3c72, #2a5298);
             padding: 20px;
         }
         .form-container {
@@ -227,6 +231,7 @@
         <!-- Form Section -->
         <div class="form-section">
             <div class="form-container">
+                <h1 id="swim_name"></h1>
                 <label for="name">Search</label>
                 <input type="text" id="searchBar" name="seach" placeholder="Search...">
                 <div class="suggestions" id="suggestions"></div>
@@ -259,9 +264,17 @@
         </div>
     </div>
     <script>
+        async function get_swim_name(){
+            fetch('/swims/current').then(x=>{
+                x.json().then(x=>{
+                    swim_name = x.status;
+                    document.getElementById('swim_name').innerText = swim_name
+                })
+            })
+        }
 
         async function get_swimmer_info(name){
-            fetch(`https://3.147.83.2/userinfo?name=${name}`).then(x=>{
+            fetch(`/userinfo?name=${name}`).then(x=>{
                 x.json().then(x=>{
                     console.log(x)
                     return x
@@ -270,7 +283,7 @@
         }
 
         function upload_swimmer(name,bday,race,gender){
-            fetch('http://3.147.83.2/users', {
+            fetch('/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -298,6 +311,7 @@
             // Return the date in the 'YYYY-MM-DD' format
             return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         }
+        get_swim_name()
     </script>
 
     <script>
@@ -337,7 +351,7 @@
                 return;
             }
 
-            const baseUrl = 'http://3.147.83.2/search';
+            const baseUrl = '/search';
 
             // Parameters to append
             const params = {
@@ -364,7 +378,7 @@
                             div.addEventListener("click", () => {
                                 console.log('click')
                                 document.getElementById('name').value = suggestion
-                                fetch(`http://3.147.83.2/userinfo?name=${suggestion}`).then(x=>{
+                                fetch(`/userinfo?name=${suggestion}`).then(x=>{
                                     x.json().then(x=>{
                                         document.getElementById('birthday').value = x.birthday.split('T')[0]
                                         console.log('bday',x.bday)
