@@ -192,7 +192,7 @@
 
     <script>
         async function post_time(bib_num, time) {
-            return fetch('http://localhost:3000/users/swim-time', {
+            return fetch('/users/swim-time', {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
