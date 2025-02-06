@@ -18,6 +18,8 @@ function start_new_race(){
 
 
 const express = require("express");
+const fs = require('fs').promises;
+const router = express.Router();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require('path');
@@ -110,6 +112,63 @@ app.get('/log_times', (req, res) => {
   res.sendFile(path.join(__dirname, 'log_times.html'));
 });
 
+app.get('/allswimmers', (req, res) => {
+  res.sendFile(path.join(__dirname, 'allswimmers.html'));
+});
+
+app.get('/hamburger.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'hamburger.css'));
+});
+
+// router.get('/css/:filename', async (req, res) => {
+//   try {
+//       const filename = req.params.filename;
+//       const cssPath = path.join(__dirname, 'css', filename);
+      
+//       // Check if file exists
+//       await fs.access(cssPath);
+      
+//       // Set correct content type for CSS
+//       res.set('Content-Type', 'text/css');
+      
+//       // Send the file
+//       res.sendFile(cssPath);
+//   } catch (error) {
+//       if (error.code === 'ENOENT') {
+//           res.status(404).send('CSS file not found');
+//       } else {
+//           console.error('Error serving CSS file:', error);
+//           res.status(500).send('Error serving CSS file');
+//       }
+//   }
+// });
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+
+// Serve JavaScript files
+router.get('/js/:filename', async (req, res) => {
+  try {
+      const filename = req.params.filename;
+      const jsPath = path.join(__dirname, 'js', filename);
+      
+      // Check if file exists
+      await fs.access(jsPath);
+      
+      // Set correct content type for JavaScript
+      res.set('Content-Type', 'application/javascript');
+      
+      // Send the file
+      res.sendFile(jsPath);
+  } catch (error) {
+      if (error.code === 'ENOENT') {
+          res.status(404).send('JavaScript file not found');
+      } else {
+          console.error('Error serving JavaScript file:', error);
+          res.status(500).send('Error serving JavaScript file');
+      }
+  }
+});
+
   // POST /swims - Add a new swim
   app.post("/swims", async (req, res) => {
     const { swim_name } = req.body;
@@ -146,7 +205,11 @@ app.get('/log_times', (req, res) => {
     }
   });
   app.get("/swims/current", async (req, res) => {
-    res.status(200).send({'status':PrimaryUser.collection.modelName})
+    try{
+      res.status(200).send({'status':PrimaryUser.collection.modelName})
+    }catch{
+      res.status(500).send({'error':'internal server error'})
+    }
   });
   
   // PATCH /swims/close - Close a swim by name
@@ -313,8 +376,13 @@ app.get('/allswimmers', async (req, res) => {
 })
 
 app.get('/currentswimmers', async (req, res) => {
-  const existingPrimaryUser = await PrimaryUser.find()
-  res.status(200).send(existingPrimaryUser);
+  try{
+    const existingPrimaryUser = await PrimaryUser.find()
+    res.status(200).send(existingPrimaryUser);
+  }
+  catch{
+    res.status(500).send({'error':'Internal Server Error'});
+  }
 })
 
 app.get('/search', async (req,res) =>{
@@ -351,7 +419,7 @@ app.get('/userinfo', async (req, res) => {
   
 
 // Start the server
-const PORT = 80;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Race Selector</title>
+    <title>Race Selector2</title>
     <style>
         body {
             display: flex;
@@ -142,9 +142,15 @@
         <div class="button-container">
             <button onclick="button_click()">Submit</button>
         </div>
+        <div class="button-container">
+            <button onclick="button_click()">Start Race</button>
+        </div>
     </div>
 
     <script>
+        function startRace(){
+            window.location.href = window.location.origin + '/start_race';
+        }
         async function get_swim_name(){
             fetch('/swims/current').then(x=>{
                 x.json().then(x=>{

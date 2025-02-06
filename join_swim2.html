@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swim Activities</title>
+  <link rel="stylesheet" href="/hamburger.css">
+    <script src="js/hamburger.js"></script>
   <style>
     body {
       display: flex;
@@ -171,7 +173,20 @@
   </style>
 </head>
 <body>
+    <div class="hamburger" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
 
+    <!-- Side Menu -->
+    <div class="side-menu">
+        <ul>
+            <li><a href="/modern_swimmer2" >Race Sign Up</a></li>
+            <li><a href="/allswimmers" >All Swimmers</a></li>
+            <li><a href="/race_results" >Race Results</a></li>
+        </ul>
+    </div>
 <header>
   <h1>Swim Activities</h1>
 </header>
