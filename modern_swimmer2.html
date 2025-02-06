@@ -222,6 +222,11 @@
         .form-container button:active {
             transform: scale(0.98);
         }
+        @media (max-width: 600px) {
+            .form-container {
+                width: 100%;
+            }
+        }
     </style>
     <!-- <style src="hamburger.css"></style> -->
 </head>
@@ -275,7 +280,7 @@
                 
                 <label for="race">Select race</label>
                 <select id="race" name="race" required>
-                    <option value="" disabled selected>Choose an option</option>
+                    <option value="" disabled selected>Choose Race</option>
                     <option value="500m">500m</option>
                     <option value="1000m">1000m</option>
                     <option value="1mile">1 Mile</option>
