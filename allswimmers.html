@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Swimmers</title>
+    <link rel="stylesheet" href="css/hamburger.css">
+    <link rel="stylesheet" href="css/table.css">
+    <script src="js/hamburger.js"></script>
+</head>
+<body>
+    <h1>Registered Swimmers</h1>
+    <div id="results">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Bib #</th>
+                        <th>Gender</th>
+                        <th>Birthday</th>
+                        <th>Race</th>
+                    </tr>
+                </thead>
+                <tbody id="swimmers">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <!-- Side Menu -->
+    <div class="side-menu">
+        <ul>
+            <li><a href="/modern_swimmer2" >Race Sign Up</a></li>
+            <li><a href="/start_race" >Start Race</a></li>
+            <li><a href="/race_results" >Race Results</a></li>
+        </ul>
+    </div>
+
+    <script>
+
+        function displayResults(data){
+            acc = ''
+            for(x of data){
+                bday = ''
+                try{
+                    bday = x.birthday.split('T')[0]
+                }
+                catch{}
+                acc+=`<tr><td>${x.name}</td><td>${x.bib_num}</td><td>${x.gender}</td><td>${bday}</td><td>${x.race}</td></tr>`
+            }
+            document.getElementById('swimmers').innerHTML = acc
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch('/currentswimmers').then(x=>{
+                x.json().then(dummyData=>{
+                    displayResults(dummyData);
+                })
+            })
+            // displayResults(dummyData);
+        });
+    </script>
+</body>
+</html>

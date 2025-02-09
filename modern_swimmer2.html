@@ -4,14 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selector</title>
+    <link rel="stylesheet" href="css/hamburger.css">
+    <link rel="stylesheet" href="css/error.css">
+    <script src="js/error.js"></script>
     <style>
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9f9f9;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: #333;
         }
-        /* Top banner styling */
+        /* Hamburger Menu Styles */
+        /* .hamburger {
+            cursor: pointer;
+            padding: 15px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+           
+            border-radius: 5px;
+        }
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            margin: 5px 0;
+            transition: 0.4s;
+        }
+        .side-menu {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            height: 100vh;
+            width: 300px;
+            background-color: white;
+            padding-top: 60px;
+            transition: 0.4s;
+            z-index: 99;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .side-menu.active {
+            right: 0;
+        }
+        .side-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .side-menu li {
+            padding: 15px 25px;
+            border-bottom: 1px solid #eee;
+        }
+        .side-menu li a {
+            color: #333;
+            text-decoration: none;
+            font-size: 16px;
+            display: block;
+        }
+        .side-menu li:hover {
+            background-color: #f5f5f5;
+        }
+        .hamburger.active div:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        .hamburger.active div:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active div:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        @media screen and (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+            .top-banner {
+                padding-right: 60px;
+            }
+        } */
+        /* Original Styles */
         .top-banner {
             display: flex;
             height: 100px;
@@ -27,25 +98,21 @@
             justify-content: center;
             font-size: 20px;
             font-weight: bold;
-            color: white;
+            color: rgb(0, 0, 0);
         }
-        .red {
-            background-color: #ff6b6b;
-        }
-        .green {
-            background-color: #51cf66;
-        }
-        .blue {
-            background-color: #339af0;
-        }
-        /* Body styling */
+        .red { background-color: #ff6b6b; }
+        .green { background-color: #51cf66; }
+        .blue { background-color: #339af0; }
+        .grey { background-color: #285776; }
+
         .body-content {
             display: flex;
             flex-direction: column;
             height: calc(100vh - 100px);
             padding-top: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
         }
-        /* .search-section {
+        .search-section {
             flex: 1;
             display: flex;
             align-items: center;
@@ -63,63 +130,14 @@
             border-radius: 25px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: border 0.3s ease;
-            position: relative;
             z-index: 5;
+            position: relative;
         }
         .search-bar:focus {
             border: 1px solid #339af0;
             outline: none;
         }
         .suggestions {
-            position: absolute;
-            top: 50px;
-            width: 60%;
-            background: white;
-            border: 1px solid #ddd;
-            border-top: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 4;
-            border-radius: 0 0 8px 8px;
-            display: none;
-        }
-        .suggestions div {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-        .suggestions div:last-child {
-            border-bottom: none;
-        }
-        .suggestions div:hover {
-            background-color: #f1f1f1;
-        } */
-        .search-section {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        background-color: #fff;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    .search-bar {
-        width: 60%;
-        padding: 12px 20px;
-        font-size: 16px;
-        border: 1px solid #ddd;
-        border-radius: 25px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: border 0.3s ease;
-        z-index: 5;
-        position: relative;
-    }
-    .search-bar:focus {
-        border: 1px solid #339af0;
-        outline: none;
-    }
-    .suggestions {
             position: relative;
             top: -15px;
             left: 0;
@@ -147,7 +165,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f9f9f9;
+            background: (135deg, #1e3c72, #2a5298);
             padding: 20px;
         }
         .form-container {
@@ -163,7 +181,7 @@
             font-weight: 600;
             color: #555;
         }
-        .form-container input{
+        .form-container input {
             width: calc(100% - 15px);
             padding: 10px 15px;
             margin-bottom: 15px;
@@ -206,27 +224,70 @@
         .form-container button:active {
             transform: scale(0.98);
         }
+        /* .error-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #d9534f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            display: none;
+            z-index: 9999;
+            max-width: 80%;
+        }
+        .error-message button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+        } */
+        @media (max-width: 600px) {
+            .form-container {
+                width: 100%;
+            }
+        }
     </style>
+    <!-- <style src="hamburger.css"></style> -->
 </head>
 <body>
+    <div class="error-message" id="errorMessage">
+        <span id="errorText">An error occurred. Please try again.</span>
+        <button onclick="closeErrorMessage()">×</button>
+    </div>
+    <!-- Hamburger Menu Button -->
+    <div class="hamburger" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <!-- Side Menu -->
+    <div class="side-menu">
+        <ul>
+            <li><a href="/start_race" >Start Race</a></li>
+            <li><a href="/allswimmers" >All Swimmers</a></li>
+            <li><a href="/race_results" >Race Results</a></li>
+        </ul>
+    </div>
+
     <!-- Top Banner -->
     <div class="top-banner">
         <div class="red" id="swimmerCount"></div>
         <div class="green" id="payment"></div>
         <div class="blue" id="bib"></div>
     </div>
+
     <!-- Main Body -->
     <div class="body-content">
-        <!-- Search Section -->
-        <!-- <div class="form-section">
-            <input type="text" id="searchBar" class="search-bar" placeholder="Search for something...">
-            <div id="suggestions" class="suggestions">
-               
-            </div>
-        </div> -->
         <!-- Form Section -->
         <div class="form-section">
             <div class="form-container">
+                <h1 id="swim_name"></h1>
                 <label for="name">Search</label>
                 <input type="text" id="searchBar" name="seach" placeholder="Search...">
                 <div class="suggestions" id="suggestions"></div>
@@ -247,7 +308,7 @@
                 
                 <label for="race">Select race</label>
                 <select id="race" name="race" required>
-                    <option value="" disabled selected>Choose an option</option>
+                    <option value="" disabled selected>Choose Race</option>
                     <option value="500m">500m</option>
                     <option value="1000m">1000m</option>
                     <option value="1mile">1 Mile</option>
@@ -255,21 +316,57 @@
                 </select>
 
                 <button onclick="button_click()">Submit</button>
-            </form>
+                <label></label>
+                <button onclick="startRace()">Start Race</button>
+            </div>
         </div>
     </div>
+    <script src="js/hamburger.js"></script>
     <script>
+        // Hamburger Menu Functions
+        // function toggleMenu() {
+        //     const hamburger = document.querySelector('.hamburger');
+        //     const sideMenu = document.querySelector('.side-menu');
+        //     hamburger.classList.toggle('active');
+        //     sideMenu.classList.toggle('active');
+        // }
 
-        async function get_swimmer_info(name){
-            fetch(`/userinfo?name=${name}`).then(x=>{
-                x.json().then(x=>{
+        // // Close menu when clicking outside
+        // document.addEventListener('click', function(event) {
+        //     const hamburger = document.querySelector('.hamburger');
+        //     const sideMenu = document.querySelector('.side-menu');
+        //     if (!event.target.closest('.hamburger') && 
+        //         !event.target.closest('.side-menu') && 
+        //         sideMenu.classList.contains('active')) {
+        //         hamburger.classList.remove('active');
+        //         sideMenu.classList.remove('active');
+        //     }
+        // });
+
+        // Original Functions
+        function startRace() {
+            window.location.href = window.location.origin + '/start_race';
+        }
+
+        async function get_swim_name() {
+            fetch('/swims/current').then(x => {
+                x.json().then(x => {
+                    swim_name = x.status;
+                    document.getElementById('swim_name').innerText = swim_name
+                })
+            })
+        }
+
+        async function get_swimmer_info(name) {
+            fetch(`/userinfo?name=${name}`).then(x => {
+                x.json().then(x => {
                     console.log(x)
                     return x
                 })
             })
         }
 
-        function upload_swimmer(name,bday,race,gender){
+        function upload_swimmer(name, bday, race, gender) {
             fetch('/users', {
                 method: 'POST',
                 headers: {
@@ -282,77 +379,59 @@
                     gender: gender
                 })
             })
-            .then(x=>{
-                x.json().then(x=>{
-                    document.getElementById('swimmerCount').innerText = `Number of Swimmers ${x.total_swimmers}`
-                    document.getElementById('bib').innerText = `Swimmer Bib Number ${x.bib_num}`
-                    console.log(x)
+            .then(x => {
+                status = x.status
+                x.json().then(x => {
+                    if(status==201){
+                        document.getElementById('swimmerCount').innerText = `Number of Swimmers ${x.total_swimmers}`
+                        document.getElementById('bib').innerText = `Swimmer Bib Number ${x.bib_num}`
+                        console.log(x)
+                    }
+                    else{
+                        error_message(x.error)
+                    }
+                
                 })
             })
         }
 
-        function convertDateToISO(dateString) {
-            // Split the input string into components
-            const [month, day, year] = dateString.split('/');
-            
-            // Return the date in the 'YYYY-MM-DD' format
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        }
-    </script>
-
-    <script>
-        
-        var bib_num = 11
-        var swimmer_count = 0
-
-        function button_click(){
+        function button_click() {
             console.log('update')
             name = document.getElementById('name').value;
             bday = document.getElementById('birthday').value;
             gender = document.getElementById('gender').value
             race = document.getElementById('race').value
-            upload_swimmer(name,bday,race,gender)
+            upload_swimmer(name, bday, race, gender)
 
-            // swimmer_count+=1
-            // bib_num+=1
             document.getElementById('name').value = ''
             document.getElementById('birthday').value = ''
             document.getElementById('gender').value = ''
             document.getElementById('race').value = ''
             document.getElementById('searchBar').value = ''
-            
-            // document.getElementById('swimmerCount').innerText = `Number of swimmers ${swimmer_count}`
-            // document.getElementById('bib').innerText = `Swimmer Bib Number ${bib_num}`
-
         }
-    
+
         const searchBar = document.getElementById("searchBar");
         const suggestionsContainer = document.getElementById("suggestions");
-    
+
         searchBar.addEventListener("input", () => {
             const query = searchBar.value.toLowerCase();
             suggestionsContainer.innerHTML = "";
-    
+
             if (query === "") {
                 return;
             }
 
             const baseUrl = '/search';
-
-            // Parameters to append
             const params = {
-            string: query
+                string: query
             };
-
-            // Construct the query string
             const queryString = new URLSearchParams(params).toString();
-
-            // Full URL with query parameters
             const url = `${baseUrl}?${queryString}`;
-            fetch(url).then(x=>{
-                x.json().then(x=>{
+            
+            fetch(url).then(x => {
+                x.json().then(x => {
                     filteredSuggestions = []
-                    for(i of x){
+                    for(i of x) {
                         filteredSuggestions.push(i.name)
                     }
                     if (filteredSuggestions.length === 0) {
@@ -364,31 +443,30 @@
                             div.addEventListener("click", () => {
                                 console.log('click')
                                 document.getElementById('name').value = suggestion
-                                fetch(`/userinfo?name=${suggestion}`).then(x=>{
-                                    x.json().then(x=>{
+                                fetch(`/userinfo?name=${suggestion}`).then(x => {
+                                    x.json().then(x => {
                                         document.getElementById('birthday').value = x.birthday.split('T')[0]
-                                        console.log('bday',x.bday)
+                                        console.log('bday', x.bday)
                                         document.getElementById('gender').value = x.gender
+                                    })
                                 })
-            })
-
                                 searchBar.value = suggestion;
                                 suggestionsContainer.innerHTML = "";
                             });
                             suggestionsContainer.appendChild(div);
                         });
                     }
-                    // console.log(x)
                 });
             });
         });
-    
-        // Hide suggestions when clicking outside
+
         document.addEventListener("click", (event) => {
             if (!event.target.closest(".search-container")) {
                 suggestionsContainer.innerHTML = "";
             }
         });
+
+        get_swim_name()
     </script>
 </body>
 </html>

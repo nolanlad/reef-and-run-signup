@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Selector2</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        button {
+            background: #ff6b6b;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #ff4757;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .form-container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            outline: none;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        input:focus, select:focus {
+            border: 2px solid #ff6b6b;
+        }
+
+        .button-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .button-container button {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 18px;
+            background: #339af0;
+            color: white;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .button-container button:hover {
+            background: #1d7ed6;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            z-index: 5;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestions div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .suggestions div:hover {
+            background-color: #ff4757;
+            color: white;
+        }
+
+        .no-suggestions {
+            padding: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <!-- Form Section -->
+    <div class="form-container">
+        <h1 id="swim_name">Select Your Race</h1>
+
+        <input type="text" id="searchBar" name="search" placeholder="Search for a swimmer..." autocomplete="off">
+        <div class="suggestions" id="suggestions"></div>
+
+        <input type="text" id="name" name="name" placeholder="Enter Name" required>
+        <input type="date" id="birthday" name="birthday" required>
+        <select id="gender" name="gender" required>
+            <option value="" disabled selected>Gender</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="O">Other</option>
+        </select>
+        <select id="race" name="race" required>
+            <option value="" disabled selected>Select Race</option>
+            <option value="500m">500m</option>
+            <option value="1000m">1000m</option>
+            <option value="1mile">1 Mile</option>
+            <option value="biath">Biathalon</option>
+        </select>
+
+        <div class="button-container">
+            <button onclick="button_click()">Submit</button>
+        </div>
+        <div class="button-container">
+            <button onclick="button_click()">Start Race</button>
+        </div>
+    </div>
+
+    <script>
+        function startRace(){
+            window.location.href = window.location.origin + '/start_race';
+        }
+        async function get_swim_name(){
+            fetch('/swims/current').then(x=>{
+                x.json().then(x=>{
+                    swim_name = x.status;
+                    document.getElementById('swim_name').innerText = swim_name
+                })
+            })
+        }
+
+        async function get_swimmer_info(name){
+            fetch(`/userinfo?name=${name}`).then(x=>{
+                x.json().then(x=>{
+                    console.log(x)
+                    return x
+                })
+            })
+        }
+
+        function upload_swimmer(name,bday,race,gender){
+            fetch('/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    birthday: bday,
+                    race: race,
+                    gender: gender
+                })
+            })
+            .then(x=>{
+                x.json().then(x=>{
+                    document.getElementById('swimmerCount').innerText = `Number of Swimmers ${x.total_swimmers}`
+                    document.getElementById('bib').innerText = `Swimmer Bib Number ${x.bib_num}`
+                    console.log(x)
+                })
+            })
+        }
+
+        function convertDateToISO(dateString) {
+            const [month, day, year] = dateString.split('/');
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+
+        get_swim_name()
+
+        const searchBar = document.getElementById("searchBar");
+        const suggestionsContainer = document.getElementById("suggestions");
+
+        searchBar.addEventListener("input", () => {
+            const query = searchBar.value.toLowerCase();
+            suggestionsContainer.innerHTML = "";
+
+            if (query === "") {
+                return;
+            }
+
+            const baseUrl = '/search';
+            const params = { string: query };
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${baseUrl}?${queryString}`;
+
+            fetch(url).then(x=>{
+                x.json().then(x=>{
+                    filteredSuggestions = []
+                    for(i of x){
+                        filteredSuggestions.push(i.name)
+                    }
+                    if (filteredSuggestions.length === 0) {
+                        suggestionsContainer.innerHTML = "<div class='no-suggestions'>No suggestions found</div>";
+                    } else {
+                        suggestionsContainer.style.display = 'block';
+                        filteredSuggestions.forEach(suggestion => {
+                            const div = document.createElement("div");
+                            div.textContent = suggestion;
+                            div.addEventListener("click", () => {
+                                document.getElementById('name').value = suggestion;
+                                fetch(`/userinfo?name=${suggestion}`).then(x=>{
+                                    x.json().then(x=>{
+                                        document.getElementById('birthday').value = x.birthday.split('T')[0]
+                                        document.getElementById('gender').value = x.gender
+                                    })
+                                });
+                                searchBar.value = suggestion;
+                                suggestionsContainer.innerHTML = "";
+                            });
+                            suggestionsContainer.appendChild(div);
+                        });
+                    }
+                });
+            });
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!event.target.closest(".form-container")) {
+                suggestionsContainer.innerHTML = "";
+                suggestionsContainer.style.display = 'none';
+            }
+        });
+
+        function button_click(){
+            console.log('update')
+            const name = document.getElementById('name').value;
+            const bday = document.getElementById('birthday').value;
+            const gender = document.getElementById('gender').value;
+            const race = document.getElementById('race').value;
+            upload_swimmer(name, bday, race, gender);
+
+            document.getElementById('name').value = '';
+            document.getElementById('birthday').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('race').value = '';
+            document.getElementById('searchBar').value = '';
+        }
+    </script>
+</body>
+</html>
