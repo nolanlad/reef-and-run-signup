@@ -183,7 +183,7 @@
     <div id="container" class="container">
         <div id="timer" class="timer">Time: 0s</div>
         <form id="inputForm">
-            <input type="text" id="nameInput" placeholder="Enter bib number..." autocomplete="off">
+            <input type="tel" id="nameInput" placeholder="Enter bib number..." autocomplete="off">
             <button type="submit">Submit</button>
         </form>
         <button id="endButton" class="hidden">End Race</button>
@@ -241,6 +241,7 @@
                         timerDisplay.textContent = `Time: ${time}s`;
                     }, 1000);
                 }
+                document.getElementById('nameInput').focus() //autoclick 
             });
 
             endButton.addEventListener("click", () => {
