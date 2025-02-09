@@ -1,12 +1,18 @@
 .hamburger {
+<<<<<<< HEAD
     /* display: none; */
+=======
+>>>>>>> origin/main
     cursor: pointer;
     padding: 15px;
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 100;
+<<<<<<< HEAD
     /* background: white; */
+=======
+>>>>>>> origin/main
     border-radius: 5px;
 }
 .hamburger div {
@@ -62,9 +68,13 @@
 @media screen and (max-width: 768px) {
     .hamburger {
         display: block;
+<<<<<<< HEAD
     }
     /* .top-banner {
         padding-right: 60px;
     } */
     
+=======
+    }    
+>>>>>>> origin/main
 }
