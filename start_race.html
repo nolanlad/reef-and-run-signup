@@ -191,6 +191,17 @@
     <div id="entries"></div>
 
     <script>
+
+        start_t = 'poop'
+        fetch('/race').then(x=>{
+            x.json().then(x=>{
+                start_t = x.time
+                if(start_t ){
+                    start_race()
+                }
+            })
+        })
+
         async function post_time(bib_num, time) {
             return fetch('/users/swim-time', {
                 method: "PATCH",
@@ -198,6 +209,16 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ 'bib_num': bib_num, 'time': time }),
+            });
+        }
+
+        async function post_start_time(time) {
+            return fetch('/race/start', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 'time': time }),
             });
         }
 
@@ -216,14 +237,31 @@
                 window.location.href = window.location.origin + '/race_results';
             }
 
+        function start_race(){
+            timerDisplay = document.getElementById("timer");
+            startButton.classList.add("hidden");
+            endButton.classList.remove("hidden");
+            container.style.visibility = "visible";
+            interval = setInterval(() => {
+                time = start_time = Math.floor(Date.now() / 1000) - start_t
+                timerDisplay.textContent = `Time: ${time}s`;
+            }, 1000);
+            document.getElementById('nameInput').focus() //autoclick 
+
+        }
+        function get_time(){
+            return Math.floor(Date.now() / 1000) - start_t
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            
             let raceStarted = false;
             let time = 0;
             let interval;
             const startButton = document.getElementById("startButton");
             const endButton = document.getElementById("endButton");
             const container = document.getElementById("container");
-            const timerDisplay = document.getElementById("timer");
+             timerDisplay = document.getElementById("timer");
             const inputForm = document.getElementById("inputForm");
             const nameInput = document.getElementById("nameInput");
             const entriesDiv = document.getElementById("entries");
@@ -242,6 +280,8 @@
                     }, 1000);
                 }
                 document.getElementById('nameInput').focus() //autoclick 
+                start_time = Math.floor(Date.now() / 1000)
+                post_start_time(start_time)
             });
 
             endButton.addEventListener("click", () => {
@@ -258,7 +298,7 @@
                 if (bib_num === "") return;
                 const card = document.createElement("div");
                 card.classList.add("card");
-
+                time = get_time()
                 post_time(bib_num, time).then(x => {
                     if (x.status === 200) {
                         x.json().then(data => {

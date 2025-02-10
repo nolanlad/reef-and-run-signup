@@ -416,7 +416,35 @@ app.get('/userinfo', async (req, res) => {
     }
 });
 
+start_time = null;
 
+app.post('/race/start', async (req,res)=>{
+  try{
+    start_time = req.body.time
+    res.status(200).json({'message':`time ${start_time}`})
+  }
+  catch{
+    res.status(500).json({'error':`server error`})
+  }
+})
+
+app.get('/race', async (req,res)=>{
+  try{
+    res.status(200).json({'time':start_time})
+  }
+  catch{
+    res.status(500).json({'error':`server error`})
+  }
+})
+
+app.get('/race/restart', async (req,res)=>{
+  try{
+    start_time = null;
+  }
+  catch{
+    res.status(500).json({'error':`server error`})
+  }
+})
 
 
 // Start the server
