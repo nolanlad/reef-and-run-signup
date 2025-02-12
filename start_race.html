@@ -196,9 +196,13 @@
         fetch('/race').then(x=>{
             x.json().then(x=>{
                 start_t = x.time
+                if(start_t === null){
+                    start_t = 0
+                }
                 if(start_t ){
                     start_race()
                 }
+                
             })
         })
 
@@ -285,8 +289,8 @@
                     }, 1000);
                 }
                 document.getElementById('nameInput').focus() //autoclick 
-                start_time = Math.floor(Date.now() / 1000)
-                post_start_time(start_time)
+                start_t = Math.floor(Date.now() / 1000)
+                post_start_time(start_t)
             });
 
             endButton.addEventListener("click", () => {
