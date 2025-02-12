@@ -440,6 +440,7 @@ app.get('/race', async (req,res)=>{
 app.get('/race/restart', async (req,res)=>{
   try{
     start_time = null;
+    res.status(200).json({'message':'restarted'})
   }
   catch{
     res.status(500).json({'error':`server error`})

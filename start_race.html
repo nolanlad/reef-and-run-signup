@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>Race Timer</title>
     <link rel="stylesheet" href="/hamburger.css">
     <script src="js/hamburger.js"></script>
@@ -234,7 +234,12 @@
         }
 
         function endRace(){
-                window.location.href = window.location.origin + '/race_results';
+                fetch('/race/restart').then(x=>{
+                    if(x.status == 200){
+                        window.location.href = window.location.origin + '/race_results';
+                    }
+                })
+                // window.location.href = window.location.origin + '/race_results';
             }
 
         function start_race(){
@@ -285,9 +290,8 @@
             });
 
             endButton.addEventListener("click", () => {
-                if (raceStarted) {
-                    confirmDialog.classList.remove("hidden");
-                }
+                confirmDialog.classList.remove("hidden");
+                
             });
 
         
