@@ -169,6 +169,28 @@ router.get('/js/:filename', async (req, res) => {
   }
 });
 
+async function get_bib_num(race){
+  var bib_num;
+  var num_swimmers;
+  const count = await PrimaryUser.countDocuments({ race: race });
+  if(race==='1mile'){
+    bib_num= count+1
+  }
+  if(race==='500m'){
+    bib_num= count+500
+  }
+  if(race==='1000m'){
+    bib_num= count+1000
+  }
+  if(race==='biath'){
+    bib_num= count+1500
+  }
+  num_swimmers = await PrimaryUser.countDocuments({ });
+  return {bib_num:bib_num,num_swimmers:num_swimmers}
+
+
+}
+
   // POST /swims - Add a new swim
   app.post("/swims", async (req, res) => {
     const { swim_name } = req.body;
@@ -250,26 +272,30 @@ app.post("/users", async (req, res) => {
   
     try {
       // Add to Primary Database
-      bib_num = 9999;
-      swim_time = '';
-      bn = 0;
-        if(race == '500m'){
-            bib_500m+=1
-            bib_num = bib_500m
-        }
-        if(race == '1000m'){
-            bib_1000m+=1
-            bib_num = bib_1000m
-        }
-        if(race == '1mile'){
-            bib_1mile+=1
-            bib_num = bib_1mile
-        }
-        if(race == 'biath'){
-            bib_biath+=1
-            bib_num = bib_biath
-        }
-        total_swimmers+=1
+      // bib_num = 9999;
+      // swim_time = '';
+      // bn = 0;
+      //   if(race == '500m'){
+      //       bib_500m+=1
+      //       bib_num = bib_500m
+      //   }
+      //   if(race == '1000m'){
+      //       bib_1000m+=1
+      //       bib_num = bib_1000m
+      //   }
+      //   if(race == '1mile'){
+      //       bib_1mile+=1
+      //       bib_num = bib_1mile
+      //   }
+      //   if(race == 'biath'){
+      //       bib_biath+=1
+      //       bib_num = bib_biath
+      //   }
+      //   total_swimmers+=1
+      swim_time = ''
+      temp = await get_bib_num(race);
+      bib_num = temp.bib_num;
+      total_swimmers = temp.num_swimmers;
       const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
       await newPrimaryUser.save();
   
