@@ -36,9 +36,13 @@ app.use((req, res, next) => {
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
-    
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
     next();
   });
+  
+  
+  
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/userdb", {
@@ -472,7 +476,6 @@ app.get('/race/restart', async (req,res)=>{
     res.status(500).json({'error':`server error`})
   }
 })
-
 
 // Start the server
 const PORT = parseInt(process.argv[2]);
