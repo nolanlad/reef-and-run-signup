@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="login-form">
+        <label for="uname">Username:</label>
+        <input type="text" id="uname" name="uname" required><br><br>
+
+        <label for="upass">Password:</label>
+        <input type="password" id="upass" name="upass" required><br><br>
+
+        <button type="submit">Login</button>
+        <p id="error"></p>
+    </form>
+
+    <script>
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const uname = document.getElementById("uname").value;
+            const upass = document.getElementById("upass").value;
+
+            const response = await fetch("/login_reefnrun", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ uname, upass })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                cookie = result.test
+                document.cookie = `rnr_cookie=${cookie};`
+                console.log("Login successful:", result);
+                window.location.href = window.location.origin + '/join_swim2';
+            } else {
+                document.getElementById('error').innerText = "Incorrect username or password"
+                console.error("Login failed");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -6,6 +6,8 @@ var bib_1000m = 1000;
 var bib_biath = 1500;
 var total_swimmers = 0;
 
+var cookies = [];
+
 
 function start_new_race(){
     bib_1mile = 1;
@@ -18,14 +20,17 @@ function start_new_race(){
 
 
 const express = require("express");
+const crypto = require("crypto")
 const fs = require('fs').promises;
 const router = express.Router();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cookieParser()); // Enables parsing of cookies
 
 app.use(express.raw({ type: 'text/csv', limit: '5mb' }));
 
@@ -93,9 +98,17 @@ const swimSchema = new mongoose.Schema({
     gender: { type: String, required: true }
   });
 
+  const loginSchema = new mongoose.Schema({
+    uname: { type: String, required: true, unique: true },
+    upass: { type: String, required: true },
+    salt: { type: String, required: true },
+    priv: {type: Number, required: true}
+  });
+
 
 // const PrimaryUser = mongoose.model("PrimaryUser2", primaryUserSchema);
 PrimaryUser = null;
+const login = mongoose.model('Login', loginSchema);
 const SecondaryUser = mongoose.model("SecondaryUser", secondaryUserSchema);
 const allswims = mongoose.model("AllSwims", allSwimsSchema);
 const Swim = mongoose.model("Swim", swimSchema);
@@ -129,8 +142,54 @@ async function add_season_pass() {
   // }
 }
 
+function make_cookie(){
+  return crypto.randomBytes(16).toString('hex')
+}
+
+function check_cookie(req,priv_req){
+  // cookie = req.cookie['rnr_cookie']
+  // if(cookie===undefined){
+  //   return false
+  // }
+  entry = cookies.find(obj => obj.cookie === cookie)
+  if(entry === undefined){
+    return false
+  }
+  return (entry.priv <= priv_req)
+
+}
+
 app.get('/test',async  (req, res) => {
-  add_season_pass()
+  cookie = req.cookies['rnr_cookie']
+  if(check_cookie(cookie,1)){
+    res.status(200).json({'message':'OK'})
+  }
+  else{
+    res.status(403).json({'message':'forbidden'})
+  }
+})
+
+app.post('/login_reefnrun',async (req,res) => {
+  uname = req.body.uname;
+  pass = req.body.upass;
+  const userinfo = await login.findOne({uname:uname});
+  hashed_password = crypto.createHash('sha256').update(userinfo.salt+pass).digest('hex')
+  authed = (hashed_password === userinfo.upass)
+  console.log(authed,hashed_password,userinfo.upass,pass)
+  //generate log cookie
+  if(authed){
+    var cookie = make_cookie();
+    priv = userinfo.priv;
+    cookies.push({cookie:cookie,priv:priv})
+
+    res.status(200).json({'test':cookie})
+    return 
+
+  }
+  else{
+    res.status(401).json({'test':'login_failed'})
+  }
+
 })
 
 async function parseCSV(csvString) {
@@ -227,6 +286,11 @@ async function parseCSV_seasonpass(csvString) {
 }
 
 app.post('/upload-csv',async  (req, res) => {
+  //authenticate
+  // if(!check_cookie(cookie,1)){
+  //   res.status(403).json({'message':'forbidden'})
+  // }
+
   const fileName = req.headers['file-name'] || `upload_${Date.now()}.csv`;
   const filePath = path.join(__dirname, fileName);
 
@@ -257,6 +321,10 @@ return res.status(200).json({'message':'file uploaded sucessfully'})
 });
 
 app.get("/users/seasonpass", async (req, res) => {
+  if(!check_cookie(cookie,1)){
+    res.status(403).json({'message':'forbidden'})
+    return
+  }
   const { name } = req.query;
 
   try {
@@ -282,41 +350,81 @@ app.get("/users/seasonpass", async (req, res) => {
 });
 
 
+app.get('/rnr_login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'rnr_login.html'));
+});
+
 //serve html
 app.get('/join_swim', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,1)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'join_swim.html'));
 });
 
 app.get('/upload', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,1)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'upload.html'));
 });
 
 app.get('/upload-seasonpass', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,1)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'upload_seasonpass.html'));
 });
 
 
 app.get('/join_swim2', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,1)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'join_swim2.html'));
 });
 
 app.get('/start_race', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'start_race.html'));
 });
 
 app.get('/modern_swimmer2', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'modern_swimmer2.html'));
 });
 
 app.get('/race_results', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'race_results.html'));
 });
 
 app.get('/log_times', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'log_times.html'));
 });
 
 app.get('/allswimmers', (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   res.sendFile(path.join(__dirname, 'allswimmers.html'));
 });
 
@@ -397,6 +505,10 @@ async function get_bib_num(race){
 
   // POST /swims - Add a new swim
   app.post("/swims", async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,1)){
+      res.status(403).json({'message':'forbidden'})
+    }
     const { swim_name } = req.body;
   
     if (!swim_name) {
@@ -426,6 +538,10 @@ async function get_bib_num(race){
   
   // GET /swims - List all swim names
   app.get("/swims", async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,1)){
+      res.status(403).json({'message':'forbidden'})
+    }
     try {
       const openSwims = await Swim.find({ is_open: true }, { swim_name: 1, _id: 0 });
       res.status(200).send(openSwims);
@@ -443,6 +559,14 @@ async function get_bib_num(race){
   
   // PATCH /swims/close - Close a swim by name
   app.post("/swims/close", async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,1)){
+      res.status(403).json({'message':'forbidden'})
+    }
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     const { swim_name } = req.body;
   
     if (!swim_name) {
@@ -471,6 +595,10 @@ async function get_bib_num(race){
 
 // POST /users
 app.post("/users", async (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     const { name, birthday, race, gender,ws } = req.body;
   
     if (!name || !birthday || !race || !gender) {
@@ -532,6 +660,10 @@ app.post("/users", async (req, res) => {
   
 // GET /users
 app.get("/users", async (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   const { name, bib_num } = req.query;
 
   try {
@@ -555,6 +687,10 @@ app.get("/users", async (req, res) => {
 });
 
 app.get("/users", async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     const { name, bib_num } = req.query;
   
     try {
@@ -579,6 +715,10 @@ app.get("/users", async (req, res) => {
 
 // PATCH /users/swim-time - Update swim_time by bib_num
 app.patch("/users/swim-time", async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     const { bib_num, time } = req.body;
   
     if (!bib_num || !time) {
@@ -608,11 +748,19 @@ app.patch("/users/swim-time", async (req, res) => {
 
 // get all previous swimmers
 app.get('/allswimmers', async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     const existingSecondaryUser = await SecondaryUser.find()
     res.status(200).send(existingSecondaryUser);
 })
 
 app.get('/currentswimmers', async (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   try{
     const existingPrimaryUser = await PrimaryUser.find()
     res.status(200).send(existingPrimaryUser);
@@ -623,6 +771,10 @@ app.get('/currentswimmers', async (req, res) => {
 })
 
 app.get('/search', async (req,res) =>{
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     string = req.query.string;
     const query = { name: { $regex: string, $options: 'i' } };
     users = await SecondaryUser.find(query)
@@ -632,6 +784,10 @@ app.get('/search', async (req,res) =>{
 })
 
 app.get('/userinfo', async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!check_cookie(cookie,2)){
+      res.status(403).json({'message':'forbidden'})
+    }
     // const { name } = req.params;
     name = req.query.name;
     if (name === undefined){
@@ -656,6 +812,10 @@ app.get('/userinfo', async (req, res) => {
 start_time = null;
 
 app.post('/race/start', async (req,res)=>{
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   try{
     start_time = req.body.time
     res.status(200).json({'message':`time ${start_time}`})
@@ -666,6 +826,10 @@ app.post('/race/start', async (req,res)=>{
 })
 
 app.get('/race', async (req,res)=>{
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   try{
     res.status(200).json({'time':start_time})
   }
@@ -675,6 +839,10 @@ app.get('/race', async (req,res)=>{
 })
 
 app.get('/race/restart', async (req,res)=>{
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+  }
   try{
     start_time = null;
     res.status(200).json({'message':'restarted'})
