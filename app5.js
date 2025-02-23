@@ -391,7 +391,7 @@ app.get('/join_swim2', (req, res) => {
 
 app.get('/start_race', (req, res) => {
   cookie = req.cookies['rnr_cookie']
-  if(!check_cookie(cookie,2)){
+  if(!check_cookie(cookie,1)){
     res.status(403).json({'message':'forbidden'})
   }
   res.sendFile(path.join(__dirname, 'start_race.html'));
