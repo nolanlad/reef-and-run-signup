@@ -261,6 +261,7 @@ async function parseCSV_seasonpass(csvString) {
           race = ''
           bib_num = ''
           swim_time = ''
+          ws = ''
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
           const user = await PrimaryUser.findOneAndUpdate({name},
