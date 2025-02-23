@@ -277,8 +277,8 @@
 
     <!-- Top Banner -->
     <div class="top-banner">
-        <div class="red" id="swimmerCount"></div>
-        <div class="green" id="payment"></div>
+        <div class="blue" id="swimmerCount"></div>
+        <div class="blue" id="payment"></div>
         <div class="blue" id="bib"></div>
     </div>
 
@@ -313,6 +313,12 @@
                     <option value="1000m">1000m</option>
                     <option value="1mile">1 Mile</option>
                     <option value="biath">Biathalon</option>
+                </select>
+                <label for="ws">Wetsuit?</label>
+                <select id="ws" name="ws" required>
+                    <option value="" disabled selected>WS/NWS</option>
+                    <option value="WS">Wetsuit</option>
+                    <option value="NWS">No Wetsuit</option>
                 </select>
 
                 <button onclick="button_click()">Submit</button>
@@ -366,7 +372,25 @@
             })
         }
 
-        function upload_swimmer(name, bday, race, gender) {
+        async function get_payment_status(name) {
+            box = document.getElementById('payment')
+            fetch(`/users/seasonpass?name=${name}`).then(x => {
+                x.json().then(x => {
+                    console.log(x)
+                    if(x.status === 'paid'){
+                        box.className = 'green'
+                        box.innerText = 'PAID'
+                    }
+                    else{
+                        box.className = 'red'
+                        box.innerText = 'PAYMENT REQUIRED'
+                    }
+                    return x
+                })
+            })
+        }
+
+        function upload_swimmer(name, bday, race, gender,ws) {
             fetch('/users', {
                 method: 'POST',
                 headers: {
@@ -376,7 +400,8 @@
                     name: name,
                     birthday: bday,
                     race: race,
-                    gender: gender
+                    gender: gender,
+                    ws: ws
                 })
             })
             .then(x => {
@@ -393,6 +418,8 @@
                 
                 })
             })
+            get_payment_status(name)
+
         }
 
         function button_click() {
@@ -401,13 +428,15 @@
             bday = document.getElementById('birthday').value;
             gender = document.getElementById('gender').value
             race = document.getElementById('race').value
-            upload_swimmer(name, bday, race, gender)
+            ws = document.getElementById('ws').value
+            upload_swimmer(name, bday, race, gender,ws)
 
             document.getElementById('name').value = ''
             document.getElementById('birthday').value = ''
             document.getElementById('gender').value = ''
             document.getElementById('race').value = ''
             document.getElementById('searchBar').value = ''
+            document.getElementById('ws').value = ''
         }
 
         const searchBar = document.getElementById("searchBar");

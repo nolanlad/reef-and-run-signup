@@ -27,6 +27,8 @@ const path = require('path');
 const app = express();
 app.use(bodyParser.json());
 
+app.use(express.raw({ type: 'text/csv', limit: '5mb' }));
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');  // Allow all origins
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PATCH');
@@ -58,10 +60,11 @@ db.once("open", () => console.log("Connected to MongoDB!"));
 const primaryUserSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   birthday: { type: Date, required: true },
-  race: { type: String, required: true },
+  race: { type: String, required: false },
   gender: { type: String, required: true },
-  bib_num: { type: String, required: true },
-  swim_time: { type: String, required: false }
+  bib_num: { type: String, required: false },
+  swim_time: { type: String, required: false },
+  ws: {type: String,required: true}
 });
 
 const secondaryUserSchema = new mongoose.Schema({
@@ -84,17 +87,214 @@ const swimSchema = new mongoose.Schema({
     is_open: { type: Boolean, default: true },
   });
 
+  const seasonPassSchema = new mongoose.Schema({
+    name: { type: String, required: true, unique: true },
+    birthday: { type: Date, required: true },
+    gender: { type: String, required: true }
+  });
+
 
 // const PrimaryUser = mongoose.model("PrimaryUser2", primaryUserSchema);
 PrimaryUser = null;
 const SecondaryUser = mongoose.model("SecondaryUser", secondaryUserSchema);
 const allswims = mongoose.model("AllSwims", allSwimsSchema);
 const Swim = mongoose.model("Swim", swimSchema);
+const SeasonPass = mongoose.model("SeasonPass", seasonPassSchema);
+
+async function add_season_pass() {
+  // try{
+    const season_pass_holders = await SeasonPass.find();
+
+    for (let seasonPassHolder of season_pass_holders) {
+      console.log(seasonPassHolder);
+      const { name, birthday, gender } = seasonPassHolder;
+
+      const race = '';
+      const bib_num = '';
+      const swim_time = '';
+      const ws = '';
+
+      // Make sure to rename the variable to avoid conflict with the outer loop variable
+      const updatedUser = await PrimaryUser.findOneAndUpdate(
+        { name },
+        { birthday, race, gender, bib_num, swim_time,ws },
+        { new: true, upsert: true }
+      );
+
+      console.log(updatedUser);  // Optionally log the updated or created user
+    }
+  // }
+  // catch{
+  //   return
+  // }
+}
+
+app.get('/test',async  (req, res) => {
+  add_season_pass()
+})
+
+async function parseCSV(csvString) {
+  const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  const result = [];
+
+  for (let line of lines) {
+      // Regular expression to match CSV values, handling both quoted and unquoted values
+      const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, ''));
+      
+      if (values.length === 4) { // Ensure we have all 3 expected values
+          result.push({
+              name: values[1],
+              dateOfBirth: values[2],
+              gender: values[3]
+          });
+          name = values[1]
+          birthday = values[2]
+          gender = values[3]
+          if (gender === 'Female'){
+            gender = 'F'
+          }
+          if (gender === 'Male'){
+            gender = 'M'
+          }
+          race = ''
+          bib_num = ''
+          swim_time = ''
+          // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
+          // await newPrimaryUser.save();
+          const user = await PrimaryUser.findOneAndUpdate({name},
+            {birthday, race, gender,bib_num,swim_time},
+            { new: true, upsert: true })
+          const existingSecondaryUser = await SecondaryUser.findOne({ name });
+          if (!existingSecondaryUser) {
+            const newSecondaryUser = new SecondaryUser({ name, birthday, gender });
+            await newSecondaryUser.save();
+          }
+          console.log(values)
+      }
+  }
+
+  return result;
+}
+
+async function parseCSV_seasonpass(csvString) {
+  const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  const result = [];
+
+  for (let line of lines) {
+      // Regular expression to match CSV values, handling both quoted and unquoted values
+      const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, ''));
+      
+      if (values.length === 3) { // Ensure we have all 3 expected values
+          result.push({
+              name: values[0],
+              dateOfBirth: values[1],
+              gender: values[2]
+          });
+          name = values[0]
+          birthday = values[1]
+          gender = values[2]
+          if (gender === 'Female'){
+            gender = 'F'
+          }
+          if (gender === 'Male'){
+            gender = 'M'
+          }
+          race = ''
+          bib_num = ''
+          swim_time = ''
+          // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
+          // await newPrimaryUser.save();
+          const user = await PrimaryUser.findOneAndUpdate({name},
+            {birthday, race, gender,bib_num,swim_time,ws},
+            { new: true, upsert: true })
+          await PrimaryUser.findOneAndUpdate({name},
+              {birthday, race, gender,bib_num,swim_time},
+              { new: true, upsert: true })
+          await SeasonPass.findOneAndUpdate({name},
+            {birthday,gender},
+            { new: true, upsert: true });
+        
+          const existingSecondaryUser = await SecondaryUser.findOne({ name });
+          if (!existingSecondaryUser) {
+            const newSecondaryUser = new SecondaryUser({ name, birthday, gender });
+            await newSecondaryUser.save();
+          }
+          console.log(values)
+      }
+  }
+
+  return result;
+}
+
+app.post('/upload-csv',async  (req, res) => {
+  const fileName = req.headers['file-name'] || `upload_${Date.now()}.csv`;
+  const filePath = path.join(__dirname, fileName);
+
+  if (!req.body || req.body.length === 0) {
+      return res.status(400).json({ error: 'No file content received' });
+  }
+
+  // Convert buffer to string (CSV content)
+  const csvData = req.body.toString();
+  await parseCSV(csvData);
+return res.status(200).json({'message':'file uploaded sucessfully'})
   
+});
+
+app.post('/upload-season-pass',async  (req, res) => {
+  const fileName = req.headers['file-name'] || `upload_${Date.now()}.csv`;
+  const filePath = path.join(__dirname, fileName);
+
+  if (!req.body || req.body.length === 0) {
+      return res.status(400).json({ error: 'No file content received' });
+  }
+
+  // Convert buffer to string (CSV content)
+  const csvData = req.body.toString();
+  await parseCSV_seasonpass(csvData);
+return res.status(200).json({'message':'file uploaded sucessfully'})
+  
+});
+
+app.get("/users/seasonpass", async (req, res) => {
+  const { name } = req.query;
+
+  try {
+    let user;
+    if (name) {
+      user = await SeasonPass.findOne({ name });
+    }
+    else {
+      return res.status(400).send({ error: "Provide a name or bib_num." });
+    }
+
+    if (!user) {
+      return res.status(200).send({ status: "unpaid" });
+    }
+    else{
+      return res.status(200).send({ status: "paid" });
+    }
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send({ error: "Internal Server Error", details: error });
+  }
+});
+
+
 //serve html
 app.get('/join_swim', (req, res) => {
   res.sendFile(path.join(__dirname, 'join_swim.html'));
 });
+
+app.get('/upload', (req, res) => {
+  res.sendFile(path.join(__dirname, 'upload.html'));
+});
+
+app.get('/upload-seasonpass', (req, res) => {
+  res.sendFile(path.join(__dirname, 'upload_seasonpass.html'));
+});
+
 
 app.get('/join_swim2', (req, res) => {
   res.sendFile(path.join(__dirname, 'join_swim2.html'));
@@ -209,12 +409,15 @@ async function get_bib_num(race){
         //create current swim database
         start_new_race();
       PrimaryUser = mongoose.model(swim_name, primaryUserSchema);
+      add_season_pass() //add season pass holders
 
       res.status(201).send({ message: "Swim added successfully." });
     } catch (error) {
       if (error.code === 11000) {
         PrimaryUser = mongoose.model(swim_name, primaryUserSchema);
+        add_season_pass() //add season pass holders
         res.status(409).send({ error: "Swim name already exists." });
+        
       } else {
         res.status(500).send({ error: "Internal Server Error", details: error });
       }
@@ -268,7 +471,7 @@ async function get_bib_num(race){
 
 // POST /users
 app.post("/users", async (req, res) => {
-    const { name, birthday, race, gender } = req.body;
+    const { name, birthday, race, gender,ws } = req.body;
   
     if (!name || !birthday || !race || !gender) {
       return res.status(400).send({ error: "All fields are required." });
@@ -296,12 +499,16 @@ app.post("/users", async (req, res) => {
       //       bib_num = bib_biath
       //   }
       //   total_swimmers+=1
+      console.log(ws)
       swim_time = ''
       temp = await get_bib_num(race);
       bib_num = temp.bib_num;
       total_swimmers = temp.num_swimmers;
-      const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
-      await newPrimaryUser.save();
+      // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
+      // await newPrimaryUser.save();
+      const user = await PrimaryUser.findOneAndUpdate({name},
+        {birthday, race, gender,bib_num,swim_time,ws},
+        { new: true, upsert: true })
   
       // Check if user exists in Secondary Database
       const existingSecondaryUser = await SecondaryUser.findOne({ name });
@@ -311,7 +518,7 @@ app.post("/users", async (req, res) => {
       }
   
       res.status(201).send({ message: "User added successfully.",
-        user: newPrimaryUser,
+        user: user,
         bib_num: bib_num,
         total_swimmers:total_swimmers});
     } catch (error) {

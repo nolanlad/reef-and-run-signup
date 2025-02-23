@@ -254,12 +254,13 @@
                                 <th>Division</th>
                                 <th>Div. Place</th>
                                 <th>Fem Place</th>
+                                <th>WS/NWS</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${raceData.map(entry => `
                                 <tr>
-                                    <td>${entry.place}</td>
+                                    <td>${entry.swim_time === 'Not Finished' ? '-': entry.place}</td>
                                     <td>${entry.name}</td>
                                     <td>${entry.bib_num}</td>
                                     <td>${entry.swim_time}</td>
@@ -268,6 +269,7 @@
                                     <td>${entry.division}</td>
                                     <td>${entry.division_place}</td>
                                     <td>${entry.gender === "F" ? entry.fem_place : "-"}</td>
+                                    <td>${!entry.ws ? '-': entry.ws}</td>
                                 </tr>
                             `).join("")}
                         </tbody>

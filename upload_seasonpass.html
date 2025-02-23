@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Upload</title>
+</head>
+<body>
+    <h2>Upload a CSV File of the season pass holders</h2>
+    <p>Note you must create Swim before you do this</p>
+    <input type="file" id="fileInput" accept=".csv">
+    <button onclick="uploadCSV()">Upload</button>
+    <p id="status"></p>
+
+    <script>
+        async function uploadCSV() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("Please select a CSV file.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function (event) {
+                try {
+                    const response = await fetch('/upload-season-pass', {
+                        method: 'POST',
+                        headers: {
+                            'File-Name': file.name,
+                            'Content-Type': 'text/csv'
+                        },
+                        body: event.target.result
+                    });
+
+                    const result = await response.json();
+                    document.getElementById('status').innerText = result.message;
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>
