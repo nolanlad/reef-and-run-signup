@@ -322,7 +322,7 @@ return res.status(200).json({'message':'file uploaded sucessfully'})
 });
 
 app.get("/users/seasonpass", async (req, res) => {
-  if(!check_cookie(cookie,1)){
+  if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
     return
   }
