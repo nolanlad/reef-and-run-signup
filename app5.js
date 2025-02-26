@@ -18,7 +18,8 @@ function start_new_race(){
 }
 
 
-
+const https = require("https")
+const fs2 = require("fs");
 const express = require("express");
 const crypto = require("crypto")
 const fs = require('fs').promises;
@@ -855,6 +856,17 @@ app.get('/race/restart', async (req,res)=>{
 
 // Start the server
 const PORT = parseInt(process.argv[2]);
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+if(PORT == 443){
+  const options = {
+    key: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/privkey.pem"),
+    cert: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/fullchain.pem"),
+  };
+  https.createServer(options, app).listen(443, () => {
+    console.log("Secure server running on port 443");
+  });
+}
+else{
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
