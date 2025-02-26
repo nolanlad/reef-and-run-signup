@@ -864,6 +864,9 @@ if(PORT == 443){
   https.createServer(options, app).listen(443, () => {
     console.log("Secure server running on port 443");
   });
+  app.listen(80, () => {
+    console.log(`Server is running on http://localhost:80`);
+  });
 }
 else{
   app.listen(PORT, () => {
