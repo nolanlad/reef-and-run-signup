@@ -175,7 +175,9 @@
         }
 
         function processRaceData(data) {
-        const raceCategories = [...new Set(data.map(entry => entry.race))];
+        // const raceCategories = [...new Set(data.map(entry => entry.race))];
+        // const raceCategories = [ "500m","1000m", "1mile", "biath","" ]
+        const raceCategories = [ "500m","1000m", "1mile", "biath"]
 
         return raceCategories.map(race => {
             let raceData = data.filter(entry => entry.race === race);
@@ -242,6 +244,9 @@
             processedData.forEach(({ race, raceData }) => {
                 const tableContainer = document.createElement("div");
                 tableContainer.classList.add("table-container");
+                // if(race ===""){
+                //     race = "Did not compete"
+                // }
 
                 const tableHTML = `
                     <h2>${race}</h2>
