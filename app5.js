@@ -357,13 +357,13 @@ app.get('/rnr_login', (req, res) => {
 });
 
 //serve html
-app.get('/join_swim', (req, res) => {
-  cookie = req.cookies['rnr_cookie']
-  if(!check_cookie(cookie,1)){
-    res.status(403).json({'message':'forbidden'})
-  }
-  res.sendFile(path.join(__dirname, 'join_swim.html'));
-});
+// app.get('/join_swim', (req, res) => {
+//   cookie = req.cookies['rnr_cookie']
+//   if(!check_cookie(cookie,1)){
+//     res.status(403).json({'message':'forbidden'})
+//   }
+//   res.sendFile(path.join(__dirname, 'join_swim.html'));
+// });
 
 app.get('/upload', (req, res) => {
   cookie = req.cookies['rnr_cookie']
