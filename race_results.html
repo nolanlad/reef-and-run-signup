@@ -247,6 +247,13 @@
                 // if(race ===""){
                 //     race = "Did not compete"
                 // }
+                // if(entry.ws === 'NWS'){
+                //     entry.ws = 'X'
+
+                // }
+                // else{
+                //     entry.ws = ''
+                // }
 
                 const tableHTML = `
                     <h2>${race}</h2>
@@ -262,7 +269,7 @@
                                 <th>Division</th>
                                 <th>Div. Place</th>
                                 <th>Fem Place</th>
-                                <th>WS/NWS</th>
+                                <th>NWS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -277,7 +284,7 @@
                                     <td>${entry.division}</td>
                                     <td>${entry.division_place}</td>
                                     <td>${entry.gender === "F" ? entry.fem_place : "-"}</td>
-                                    <td>${!entry.ws ? '-': entry.ws}</td>
+                                    <td>${entry.ws ==='NWS' ? 'X': ''}</td>
                                 </tr>
                             `).join("")}
                         </tbody>
