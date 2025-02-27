@@ -500,7 +500,15 @@ async function get_bib_num(race){
     bib_num= count+1500
   }
   num_swimmers = await PrimaryUser.countDocuments({ });
-  return {bib_num:bib_num,num_swimmers:num_swimmers}
+  // return {bib_num:bib_num,num_swimmers:num_swimmers}
+  return {bib_num:bib_num}
+
+
+}
+
+async function get_num_swimmers(race){
+  var num_swimmers = await PrimaryUser.countDocuments({ });
+  return {num_swimmers:num_swimmers}
 
 
 }
@@ -633,7 +641,7 @@ app.post("/users", async (req, res) => {
       swim_time = ''
       temp = await get_bib_num(race);
       bib_num = temp.bib_num;
-      total_swimmers = temp.num_swimmers;
+      // total_swimmers = temp.num_swimmers;
       // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
       // await newPrimaryUser.save();
       const user = await PrimaryUser.findOneAndUpdate({name},
@@ -646,6 +654,8 @@ app.post("/users", async (req, res) => {
         const newSecondaryUser = new SecondaryUser({ name, birthday, gender });
         await newSecondaryUser.save();
       }
+      temp = await get_num_swimmers(race);
+      total_swimmers = temp.num_swimmers;
   
       res.status(201).send({ message: "User added successfully.",
         user: user,
