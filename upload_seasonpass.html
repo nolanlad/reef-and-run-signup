@@ -10,6 +10,9 @@
     <p>Note you must create Swim before you do this</p>
     <input type="file" id="fileInput" accept=".csv">
     <button onclick="uploadCSV()">Upload</button>
+    <!-- <h2>Delete all season passholders</h2>
+    <p>Note you must create Swim before you do this</p>
+    <button onclick="deleteSP()">Delete Season Pass Holders</button> -->
     <p id="status"></p>
 
     <script>
@@ -43,6 +46,16 @@
 
             reader.readAsArrayBuffer(file);
         }
+        // async function deleteSP(){
+        //         try {
+        //             const response = await fetch('/drop_seasonpass');
+
+        //             const result = await response.json();
+        //             document.getElementById('status').innerText = result.message;
+        //         } catch (error) {
+        //             console.error('Upload failed:', error);
+        //         }
+        // }
     </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 // app.js
+//waiver
 
 var bib_1mile = 1;
 var bib_500m = 500;
@@ -70,7 +71,8 @@ const primaryUserSchema = new mongoose.Schema({
   gender: { type: String, required: true },
   bib_num: { type: String, required: false },
   swim_time: { type: String, required: false },
-  ws: {type: String,required: true}
+  ws: {type: String,required: true},
+  reg_type: {type: String,required: false}
 });
 
 const secondaryUserSchema = new mongoose.Schema({
@@ -127,11 +129,12 @@ async function add_season_pass() {
       const bib_num = '';
       const swim_time = '';
       const ws = '';
+      const reg_type = 'Season Pass'
 
       // Make sure to rename the variable to avoid conflict with the outer loop variable
       const updatedUser = await PrimaryUser.findOneAndUpdate(
         { name },
-        { birthday, race, gender, bib_num, swim_time,ws },
+        { birthday, race, gender, bib_num, swim_time,ws,reg_type },
         { new: true, upsert: true }
       );
 
@@ -164,6 +167,21 @@ app.get('/test',async  (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(check_cookie(cookie,1)){
     res.status(200).json({'message':'OK'})
+  }
+  else{
+    res.status(403).json({'message':'forbidden'})
+  }
+})
+
+app.get('/drop_seasonpass',async  (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(check_cookie(cookie,1)){
+    try {
+          await SeasonPass.deleteMany({});
+          res.status(200).json({'message':"All documents deleted successfully."});
+      } catch (error) {
+        res.status(500).json({'error':"error deleting documents"});
+      }
   }
   else{
     res.status(403).json({'message':'forbidden'})
@@ -219,10 +237,11 @@ async function parseCSV(csvString) {
           race = ''
           bib_num = ''
           swim_time = ''
+          reg_type = 'Online'
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
           const user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time},
+            {birthday, race, gender,bib_num,swim_time,reg_type},
             { new: true, upsert: true })
           const existingSecondaryUser = await SecondaryUser.findOne({ name });
           if (!existingSecondaryUser) {
@@ -263,10 +282,11 @@ async function parseCSV_seasonpass(csvString) {
           bib_num = ''
           swim_time = ''
           ws = ''
+          reg_type = 'Season Pass'
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
           const user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,ws},
+            {birthday, race, gender,bib_num,swim_time,ws,reg_type},
             { new: true, upsert: true })
           await PrimaryUser.findOneAndUpdate({name},
               {birthday, race, gender,bib_num,swim_time},
@@ -288,6 +308,11 @@ async function parseCSV_seasonpass(csvString) {
 }
 
 app.post('/upload-csv',async  (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+    return
+  }
   //authenticate
   // if(!check_cookie(cookie,1)){
   //   res.status(403).json({'message':'forbidden'})
@@ -308,6 +333,11 @@ return res.status(200).json({'message':'file uploaded sucessfully'})
 });
 
 app.post('/upload-season-pass',async  (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!check_cookie(cookie,2)){
+    res.status(403).json({'message':'forbidden'})
+    return
+  }
   const fileName = req.headers['file-name'] || `upload_${Date.now()}.csv`;
   const filePath = path.join(__dirname, fileName);
 
@@ -323,6 +353,7 @@ return res.status(200).json({'message':'file uploaded sucessfully'})
 });
 
 app.get("/users/seasonpass", async (req, res) => {
+  cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
     return

@@ -20,6 +20,7 @@
                         <th>Gender</th>
                         <th>Birthday</th>
                         <th>Race</th>
+                        <th>Reg. Type</th>
                     </tr>
                 </thead>
                 <tbody id="swimmers">
@@ -42,13 +43,15 @@
             <li><a href="/race_results" >Race Results</a></li>
             <li><a href="/upload" >Upload Online Registrants</a></li>
             <li><a href="/upload-seasonpass" >Upload Season Pass Holders</a></li>
-            <li><a href="/join_swim2" >Start Swim</a></li>
+            <li><a href="/join_swim2" >Create Swim</a></li>
         </ul>
     </div>
 
     <script>
 
         function displayResults(data){
+            data.sort((a, b) => a.name.localeCompare(b.name));
+            console.log(data)
             acc = ''
             for(x of data){
                 bday = ''
@@ -56,7 +59,7 @@
                     bday = x.birthday.split('T')[0]
                 }
                 catch{}
-                acc+=`<tr><td>${x.name}</td><td>${x.bib_num}</td><td>${x.gender}</td><td>${bday}</td><td>${x.race}</td></tr>`
+                acc+=`<tr><td>${x.name}</td><td>${x.bib_num}</td><td>${x.gender}</td><td>${bday}</td><td>${x.race}</td><td>${!x.reg_type ? 'Day of':x.reg_type}</td></tr>`
             }
             document.getElementById('swimmers').innerHTML = acc
         }
