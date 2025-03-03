@@ -400,6 +400,7 @@ app.get('/upload', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,1)){
     res.status(403).json({'message':'forbidden'})
+    return 
   }
   res.sendFile(path.join(__dirname, 'upload.html'));
 });
@@ -408,6 +409,7 @@ app.get('/upload-seasonpass', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,1)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   res.sendFile(path.join(__dirname, 'upload_seasonpass.html'));
 });
@@ -417,6 +419,7 @@ app.get('/join_swim2', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,1)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   res.sendFile(path.join(__dirname, 'join_swim2.html'));
 });
@@ -425,6 +428,7 @@ app.get('/start_race', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,1)){
     res.status(403).json({'message':'forbidden'})
+    return 
   }
   res.sendFile(path.join(__dirname, 'start_race.html'));
 });
@@ -433,6 +437,7 @@ app.get('/modern_swimmer2', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return 
   }
   res.sendFile(path.join(__dirname, 'modern_swimmer2.html'));
 });
@@ -441,6 +446,7 @@ app.get('/race_results', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return 
   }
   res.sendFile(path.join(__dirname, 'race_results.html'));
 });
@@ -449,6 +455,7 @@ app.get('/log_times', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return 
   }
   res.sendFile(path.join(__dirname, 'log_times.html'));
 });
@@ -457,6 +464,7 @@ app.get('/allswimmers', (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   res.sendFile(path.join(__dirname, 'allswimmers.html'));
 });
@@ -548,7 +556,7 @@ async function get_num_swimmers(race){
   app.post("/swims", async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,1)){
-      res.status(403).json({'message':'forbidden'})
+      return res.status(403).json({'message':'forbidden'})
     }
     const { swim_name } = req.body;
   
@@ -581,7 +589,7 @@ async function get_num_swimmers(race){
   app.get("/swims", async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,1)){
-      res.status(403).json({'message':'forbidden'})
+      return res.status(403).json({'message':'forbidden'})
     }
     try {
       const openSwims = await Swim.find({ is_open: true }, { swim_name: 1, _id: 0 });
@@ -602,11 +610,7 @@ async function get_num_swimmers(race){
   app.post("/swims/close", async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,1)){
-      res.status(403).json({'message':'forbidden'})
-    }
-    cookie = req.cookies['rnr_cookie']
-    if(!check_cookie(cookie,2)){
-      res.status(403).json({'message':'forbidden'})
+      return res.status(403).json({'message':'forbidden'})
     }
     const { swim_name } = req.body;
   
@@ -638,7 +642,7 @@ async function get_num_swimmers(race){
 app.post("/users", async (req, res) => {
   cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,2)){
-      res.status(403).json({'message':'forbidden'})
+      return res.status(403).json({'message':'forbidden'})
     }
     const { name, birthday, race, gender,ws } = req.body;
   
@@ -705,7 +709,7 @@ app.post("/users", async (req, res) => {
 app.get("/users", async (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
-    res.status(403).json({'message':'forbidden'})
+    return res.status(403).json({'message':'forbidden'})
   }
   const { name, bib_num } = req.query;
 
@@ -732,7 +736,7 @@ app.get("/users", async (req, res) => {
 app.get("/users", async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,2)){
-      res.status(403).json({'message':'forbidden'})
+      return res.status(403).json({'message':'forbidden'})
     }
     const { name, bib_num } = req.query;
   
@@ -761,6 +765,7 @@ app.patch("/users/swim-time", async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,2)){
       res.status(403).json({'message':'forbidden'})
+      return
     }
     const { bib_num, time } = req.body;
   
@@ -794,6 +799,7 @@ app.get('/allswimmers', async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,2)){
       res.status(403).json({'message':'forbidden'})
+      return
     }
     const existingSecondaryUser = await SecondaryUser.find()
     res.status(200).send(existingSecondaryUser);
@@ -814,22 +820,31 @@ app.get('/currentswimmers', async (req, res) => {
 })
 
 app.get('/search', async (req,res) =>{
+  try{
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,2)){
       res.status(403).json({'message':'forbidden'})
+      return 
     }
     string = req.query.string;
     const query = { name: { $regex: string, $options: 'i' } };
     users = await SecondaryUser.find(query)
 
     
-    res.json(users)
+    res.status(200).json(users)
+    return
+    
+  }
+  catch{
+    res.status(500).json({'error':'Internal Server Error'})
+  }
 })
 
 app.get('/userinfo', async (req, res) => {
     cookie = req.cookies['rnr_cookie']
     if(!check_cookie(cookie,2)){
       res.status(403).json({'message':'forbidden'})
+      return 
     }
     // const { name } = req.params;
     name = req.query.name;
@@ -858,6 +873,7 @@ app.post('/race/start', async (req,res)=>{
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   try{
     start_time = req.body.time
@@ -872,6 +888,7 @@ app.get('/race', async (req,res)=>{
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   try{
     res.status(200).json({'time':start_time})
@@ -885,6 +902,7 @@ app.get('/race/restart', async (req,res)=>{
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   try{
     start_time = null;
