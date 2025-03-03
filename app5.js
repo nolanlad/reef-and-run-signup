@@ -30,6 +30,21 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
+process.on('exit', () => {
+  console.log('/home/ubuntu/app5_terminated.txt', 'Process terminated at ' + new Date());
+});
+
+process.on('SIGINT', () => {
+  console.log('/home/ubuntu/app5_terminated.txt', 'Process killed (SIGINT) at ' + new Date());
+  process.exit();
+});
+
+process.on('SIGTERM', () => {
+  console.log('/home/ubuntu/app5_terminated.txt', 'Process killed (SIGTERM) at ' + new Date());
+  process.exit();
+});
+
+
 const app = express();
 app.use(bodyParser.json());
 app.use(cookieParser()); // Enables parsing of cookies
