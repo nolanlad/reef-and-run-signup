@@ -742,9 +742,9 @@ app.get("/users", async (req, res) => {
       return res.status(404).send({ error: "User not found." });
     }
 
-    res.status(200).send(user);
+    return res.status(200).send(user);
   } catch (error) {
-    res.status(500).send({ error: "Internal Server Error", details: error });
+    return res.status(500).send({ error: "Internal Server Error", details: error });
   }
 });
 
@@ -769,9 +769,9 @@ app.get("/users", async (req, res) => {
         return res.status(404).send({ error: "User not found." });
       }
   
-      res.status(200).send(user);
+      return res.status(200).send(user);
     } catch (error) {
-      res.status(500).send({ error: "Internal Server Error", details: error });
+      return res.status(500).send({ error: "Internal Server Error", details: error });
     }
   });
 
@@ -806,6 +806,7 @@ app.patch("/users/swim-time", async (req, res) => {
       });
     } catch (error) {
       res.status(500).send({ error: "Internal Server Error", details: error });
+      return
     }
   });
 
@@ -818,19 +819,23 @@ app.get('/allswimmers', async (req, res) => {
     }
     const existingSecondaryUser = await SecondaryUser.find()
     res.status(200).send(existingSecondaryUser);
+    return
 })
 
 app.get('/currentswimmers', async (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
     res.status(403).json({'message':'forbidden'})
+    return
   }
   try{
     const existingPrimaryUser = await PrimaryUser.find()
     res.status(200).send(existingPrimaryUser);
+    return
   }
   catch{
     res.status(500).send({'error':'Internal Server Error'});
+    return
   }
 })
 
@@ -938,9 +943,9 @@ if(PORT == 443){
   https.createServer(options, app).listen(443, () => {
     console.log("Secure server running on port 443");
   });
-  app.listen(80, () => {
-    console.log(`Server is running on http://localhost:80`);
-  });
+  // app.listen(80, () => {
+  //   console.log(`Server is running on http://localhost:80`);
+  // });
 }
 else{
   app.listen(PORT, () => {
