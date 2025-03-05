@@ -937,7 +937,8 @@ app.get('/race/restart', async (req,res)=>{
 const PORT = parseInt(process.argv[2]);
 if(PORT == 443){
   const options = {
-    key: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/privkey.pem"),
+    // key: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/privkey.pem"),
+    key: fs2.readFileSync("/home/ubuntu/privkey.pem"),
     cert: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/fullchain.pem"),
   };
   https.createServer(options, app).listen(443, () => {
