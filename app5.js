@@ -939,7 +939,8 @@ if(PORT == 443){
   const options = {
     // key: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/privkey.pem"),
     key: fs2.readFileSync("/home/ubuntu/privkey.pem"),
-    cert: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/fullchain.pem"),
+    // cert: fs2.readFileSync("/etc/letsencrypt/live/anomaloussignalsgroup.com/fullchain.pem"),
+    cert: fs2.readFileSync("/home/ubuntu/fullchain.pem")
   };
   https.createServer(options, app).listen(443, () => {
     console.log("Secure server running on port 443");
