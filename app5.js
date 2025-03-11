@@ -204,24 +204,32 @@ app.get('/drop_seasonpass',async  (req, res) => {
 })
 
 app.post('/login_reefnrun',async (req,res) => {
-  uname = req.body.uname;
-  pass = req.body.upass;
-  const userinfo = await login.findOne({uname:uname});
-  hashed_password = crypto.createHash('sha256').update(userinfo.salt+pass).digest('hex')
-  authed = (hashed_password === userinfo.upass)
-  console.log(authed,hashed_password,userinfo.upass,pass)
-  //generate log cookie
-  if(authed){
-    var cookie = make_cookie();
-    priv = userinfo.priv;
-    cookies.push({cookie:cookie,priv:priv})
+  try{
+    uname = req.body.uname;
+    pass = req.body.upass;
+    const userinfo = await login.findOne({uname:uname});
+    if(!userinfo){
+      return res.status(401).json({'error':'no such user'})
+    }
+    hashed_password = crypto.createHash('sha256').update(userinfo.salt+pass).digest('hex')
+    authed = (hashed_password === userinfo.upass)
+    console.log(authed,hashed_password,userinfo.upass,pass)
+    //generate log cookie
+    if(authed){
+      var cookie = make_cookie();
+      priv = userinfo.priv;
+      cookies.push({cookie:cookie,priv:priv})
 
-    res.status(200).json({'test':cookie})
-    return 
+      return res.status(200).json({'test':cookie}) 
+
+    }
+    else{
+      return res.status(401).json({'error':'login failed'})
+    }
 
   }
-  else{
-    res.status(401).json({'test':'login_failed'})
+  catch{
+    return res.status(500).json({'error':'internal server error'})
   }
 
 })
@@ -253,6 +261,12 @@ async function parseCSV(csvString) {
           bib_num = ''
           swim_time = ''
           reg_type = 'Online'
+          sp = await SeasonPass.findOne({name})
+          console.log(sp)
+          console.log(name)
+          if(sp){
+            reg_type = 'Season Pass'
+          }
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
           const user = await PrimaryUser.findOneAndUpdate({name},
@@ -300,12 +314,12 @@ async function parseCSV_seasonpass(csvString) {
           reg_type = 'Season Pass'
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
-          const user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,ws,reg_type},
-            { new: true, upsert: true })
-          await PrimaryUser.findOneAndUpdate({name},
-              {birthday, race, gender,bib_num,swim_time},
-              { new: true, upsert: true })
+          // const user = await PrimaryUser.findOneAndUpdate({name},
+          //   {birthday, race, gender,bib_num,swim_time,ws,reg_type},
+          //   { new: true, upsert: true })
+          // await PrimaryUser.findOneAndUpdate({name},
+          //     {birthday, race, gender,bib_num,swim_time},
+          //     { new: true, upsert: true })
           await SeasonPass.findOneAndUpdate({name},
             {birthday,gender},
             { new: true, upsert: true });
@@ -367,6 +381,7 @@ return res.status(200).json({'message':'file uploaded sucessfully'})
   
 });
 
+// che
 app.get("/users/seasonpass", async (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!check_cookie(cookie,2)){
@@ -391,7 +406,7 @@ app.get("/users/seasonpass", async (req, res) => {
       return res.status(200).send({ status: "paid" });
     }
 
-    res.status(200).send(user);
+    // res.status(200).send(user);
   } catch (error) {
     res.status(500).send({ error: "Internal Server Error", details: error });
   }
@@ -585,13 +600,13 @@ async function get_num_swimmers(race){
         //create current swim database
         start_new_race();
       PrimaryUser = mongoose.model(swim_name, primaryUserSchema);
-      add_season_pass() //add season pass holders
+      // add_season_pass() //add season pass holders
 
       res.status(201).send({ message: "Swim added successfully." });
     } catch (error) {
       if (error.code === 11000) {
         PrimaryUser = mongoose.model(swim_name, primaryUserSchema);
-        add_season_pass() //add season pass holders
+        // add_season_pass() //add season pass holders
         res.status(409).send({ error: "Swim name already exists." });
         
       } else {
@@ -694,9 +709,20 @@ app.post("/users", async (req, res) => {
       // total_swimmers = temp.num_swimmers;
       // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
       // await newPrimaryUser.save();
-      const user = await PrimaryUser.findOneAndUpdate({name},
-        {birthday, race, gender,bib_num,swim_time,ws},
-        { new: true, upsert: true })
+      const sp = await SeasonPass.findOne({ name });
+      if(sp){
+        reg_type = 'Season Pass'
+        user = await PrimaryUser.findOneAndUpdate({name},
+          {birthday, race, gender,bib_num,swim_time,ws,reg_type},
+          { new: true, upsert: true })
+    
+      }
+      else{
+        user = await PrimaryUser.findOneAndUpdate({name},
+          {birthday, race, gender,bib_num,swim_time,ws},
+          { new: true, upsert: true })
+
+      }
   
       // Check if user exists in Secondary Database
       const existingSecondaryUser = await SecondaryUser.findOne({ name });
