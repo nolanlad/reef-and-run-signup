@@ -184,7 +184,7 @@
     </div>
     <button id="startButton">Start Race</button>
     <div id="container" class="container">
-        <div id="timer" class="timer">Time: 0s</div>
+        <div id="timer" class="timer">Time:</div>
         <form id="inputForm">
             <input type="numeric" pattern="[0-9]*" id="nameInput" placeholder="Enter bib number..." autocomplete="off">
             <button type="submit">Submit</button>
@@ -194,6 +194,15 @@
     <div id="entries"></div>
 
     <script>
+
+        function format_time(time){
+            time = Math.floor(time)
+            hrs = Math.floor(time/(60*60))
+            mins = Math.floor(time/(60))
+            secs = time%60
+            return `${hrs}h ${mins}m ${secs}s`
+
+        }
 
         start_t = 'poop'
         fetch('/race').then(x=>{
@@ -256,7 +265,8 @@
             container.style.visibility = "visible";
             interval = setInterval(() => {
                 time = start_time = Math.floor(Date.now() / 1000) - start_t
-                timerDisplay.textContent = `Time: ${time}s`;
+                time = format_time(time)
+                timerDisplay.textContent = `Time: ${time}`;
             }, 1000);
             document.getElementById('nameInput').focus() //autoclick 
 
@@ -313,7 +323,8 @@
                 post_time(bib_num, time).then(x => {
                     if (x.status === 200) {
                         x.json().then(data => {
-                            card.innerHTML = `<span>${data.user.name}</span><span>${data.user.bib_num}</span><span>${time}s</span>`;
+                            ftime = format_time(time)
+                            card.innerHTML = `<span>${data.user.name}</span><span>${data.user.bib_num}</span><span>${ftime}</span>`;
                             entriesDiv.prepend(card);
                         });
                     } else {

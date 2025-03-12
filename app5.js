@@ -612,6 +612,13 @@ async function get_num_swimmers(race){
 
 }
 
+async function clear_swims(){
+
+  const current_swim = await Swim.updateMany({is_current: true},
+    {is_current: false}
+  )
+}
+
   // POST /swims - Add a new swim
   app.post("/swims", async (req, res) => {
     cookie = req.cookies['rnr_cookie']
@@ -953,12 +960,15 @@ app.post('/race/start', async (req,res)=>{
     return
   }
   try{
-    start_time = req.body.time
-    const current_swim = await Swim.findOneAndUpdate({is_current: true},
-      {start_time},
-      {new: true}
+    if(PrimaryUser){
+      swim_name = PrimaryUser.collection.modelName
+      start_time = req.body.time
+      const current_swim = await Swim.findOneAndUpdate({swim_name: swim_name},
+        {start_time},
+        {new: true}
     )
     res.status(200).json({'message':`time ${start_time}`,'swim':current_swim})
+    }
   }
   catch{
     res.status(500).json({'error':`server error`})
@@ -972,12 +982,18 @@ app.get('/race', async (req,res)=>{
     return
   }
   try{
-    const current_swim = await Swim.findOne({is_current: true})
-    if(current_swim){
-      res.status(200).json({'time':current_swim.start_time})
+    if(PrimaryUser){
+      swim_name = PrimaryUser.collection.modelName
+      const current_swim = await Swim.findOne({swim_name: swim_name})
+      if(current_swim){
+        res.status(200).json({'time':current_swim.start_time})
+      }
+      else{
+        res.status(500).json({'error':'internal server error'})
+      }
     }
     else{
-      res.status(500).json({'error':'internal server error'})
+      res.status(500).json({'error':'no current swim'})
     }
   }
   catch{

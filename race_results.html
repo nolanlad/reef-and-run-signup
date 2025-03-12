@@ -145,6 +145,15 @@
             { name: "Grace", race: "100m Freestyle", swim_time: 57, bib_num: 107, birthday: "1980-12-10T00:00:00.000Z", gender: "F" }
         ];
 
+        function format_time(time){
+            time = Math.floor(time)
+            hrs = Math.floor(time/(60*60))
+            mins = Math.floor(time/(60))
+            secs = time%60
+            return `${hrs}h ${mins}m ${secs}s`
+
+        }
+
         function calculateAge(birthday) {
             const birthDate = new Date(birthday);
             const today = new Date();
@@ -278,7 +287,7 @@
                                     <td>${entry.swim_time === 'Not Finished' ? '-': entry.place}</td>
                                     <td>${entry.name}</td>
                                     <td>${entry.bib_num}</td>
-                                    <td>${entry.swim_time}</td>
+                                    <td>${format_time(entry.swim_time)}</td>
                                     <td>${entry.age}</td>
                                     <td>${entry.gender}</td>
                                     <td>${entry.division}</td>
