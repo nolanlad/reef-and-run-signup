@@ -108,6 +108,8 @@ const allSwimsSchema = new mongoose.Schema({
 const swimSchema = new mongoose.Schema({
     swim_name: { type: String, required: true, unique: true },
     is_open: { type: Boolean, default: true },
+    is_current: {type: Boolean,default: false},
+    start_time: {type: Number}
   });
 
   const seasonPassSchema = new mongoose.Schema({
@@ -123,14 +125,27 @@ const swimSchema = new mongoose.Schema({
     priv: {type: Number, required: true}
   });
 
+  const cookieSchema = new mongoose.Schema({
+    cookie: { type: String, required: true, unique: true },
+    priv: { type: Number, required: true },
+  });
+
 
 // const PrimaryUser = mongoose.model("PrimaryUser2", primaryUserSchema);
 PrimaryUser = null;
+
 const login = mongoose.model('Login', loginSchema);
 const SecondaryUser = mongoose.model("SecondaryUser", secondaryUserSchema);
 const allswims = mongoose.model("AllSwims", allSwimsSchema);
 const Swim = mongoose.model("Swim", swimSchema);
 const SeasonPass = mongoose.model("SeasonPass", seasonPassSchema);
+const cookieDB = mongoose.model('ccookie',cookieSchema)
+Swim.findOne({is_current: true}).then(x=>{
+  if(x){
+    console.log('joining swim: '+x.swim_name)
+    PrimaryUser = mongoose.model(x.swim_name, primaryUserSchema);
+  }
+})
 
 async function add_season_pass() {
   // try{
@@ -165,22 +180,31 @@ function make_cookie(){
   return crypto.randomBytes(16).toString('hex')
 }
 
-function check_cookie(req,priv_req){
+async function check_cookie(req,priv_req){
   // cookie = req.cookie['rnr_cookie']
   // if(cookie===undefined){
   //   return false
   // }
   entry = cookies.find(obj => obj.cookie === cookie)
-  if(entry === undefined){
-    return false
-  }
-  return (entry.priv <= priv_req)
+  cookieDB.findOne({cookie}).then(entry=>{
+    console.log(entry)
+    if(!entry){
+      console.log('shid')
+      return false
+
+    }
+    console.log(entry.priv <= priv_req)
+    console.log(entry.priv)
+
+    return (entry.priv <= priv_req)
+    
+  });
 
 }
 
 app.get('/test',async  (req, res) => {
   cookie = req.cookies['rnr_cookie']
-  if(check_cookie(cookie,1)){
+  if(await check_cookie(cookie,1)){
     res.status(200).json({'message':'OK'})
   }
   else{
@@ -218,9 +242,15 @@ app.post('/login_reefnrun',async (req,res) => {
     if(authed){
       var cookie = make_cookie();
       priv = userinfo.priv;
-      cookies.push({cookie:cookie,priv:priv})
+      // cookies.push({cookie:cookie,priv:priv})
+      const cook = new cookieDB({
+        cookie: cookie,
+        priv: priv
+      });
+    
+      await cook.save();
 
-      return res.status(200).json({'test':cookie}) 
+      return res.status(200).json({'test':cookie,'user':cook}) 
 
     }
     else{
@@ -595,7 +625,7 @@ async function get_num_swimmers(race){
     }
   
     try {
-      const newSwim = new Swim({ swim_name, is_open: true });
+      const newSwim = new Swim({ swim_name, is_open: true, is_current: true });
       await newSwim.save();
         //create current swim database
         start_new_race();
@@ -651,9 +681,10 @@ async function get_num_swimmers(race){
     try {
       const updatedSwim = await Swim.findOneAndUpdate(
         { swim_name },
-        { is_open: false },
+        { is_open: false , is_current: false},
         { new: true }
       );
+      PrimaryUser = null;
   
       if (!updatedSwim) {
         return res.status(404).send({ error: "Swim not found." });
@@ -923,7 +954,11 @@ app.post('/race/start', async (req,res)=>{
   }
   try{
     start_time = req.body.time
-    res.status(200).json({'message':`time ${start_time}`})
+    const current_swim = await Swim.findOneAndUpdate({is_current: true},
+      {start_time},
+      {new: true}
+    )
+    res.status(200).json({'message':`time ${start_time}`,'swim':current_swim})
   }
   catch{
     res.status(500).json({'error':`server error`})
@@ -937,7 +972,13 @@ app.get('/race', async (req,res)=>{
     return
   }
   try{
-    res.status(200).json({'time':start_time})
+    const current_swim = await Swim.findOne({is_current: true})
+    if(current_swim){
+      res.status(200).json({'time':current_swim.start_time})
+    }
+    else{
+      res.status(500).json({'error':'internal server error'})
+    }
   }
   catch{
     res.status(500).json({'error':`server error`})
@@ -952,7 +993,11 @@ app.get('/race/restart', async (req,res)=>{
   }
   try{
     start_time = null;
-    res.status(200).json({'message':'restarted'})
+    const current_swim = await Swim.findOneAndUpdate({is_current: true},
+      {start_time: null},
+      {new: true}
+    )
+    res.status(200).json({'message':'restarted','swim':current_swim})
   }
   catch{
     res.status(500).json({'error':`server error`})
