@@ -184,7 +184,7 @@
     </div>
     <button id="startButton">Start Race</button>
     <div id="container" class="container">
-        <div id="timer" class="timer">Time:</div>
+        <div id="timer" class="timer">Time: -</div>
         <form id="inputForm">
             <input type="numeric" pattern="[0-9]*" id="nameInput" placeholder="Enter bib number..." autocomplete="off">
             <button type="submit">Submit</button>
@@ -266,6 +266,7 @@
             interval = setInterval(() => {
                 time = start_time = Math.floor(Date.now() / 1000) - start_t
                 time = format_time(time)
+                console.log('poopy')
                 timerDisplay.textContent = `Time: ${time}`;
             }, 1000);
             document.getElementById('nameInput').focus() //autoclick 
@@ -289,21 +290,23 @@
             const entriesDiv = document.getElementById("entries");
 
             startButton.addEventListener("click", () => {
-                if (!raceStarted) {
-                    raceStarted = true;
-                    time = 0;
-                    entriesDiv.innerHTML = "";
-                    startButton.classList.add("hidden");
-                    endButton.classList.remove("hidden");
-                    container.style.visibility = "visible";
-                    interval = setInterval(() => {
-                        time++;
-                        timerDisplay.textContent = `Time: ${time}s`;
-                    }, 1000);
-                }
+                // if (!raceStarted) {
+                //     raceStarted = true;
+                //     time = 0;
+                //     entriesDiv.innerHTML = "";
+                //     startButton.classList.add("hidden");
+                //     endButton.classList.remove("hidden");
+                //     container.style.visibility = "visible";
+                //     interval = setInterval(() => {
+                //         time++;
+                //         ftime = 
+                //         timerDisplay.textContent = `Time: ${time}s`;
+                //     }, 1000);
+                // }
                 document.getElementById('nameInput').focus() //autoclick 
                 start_t = Math.floor(Date.now() / 1000)
                 post_start_time(start_t)
+                start_race()
             });
 
             endButton.addEventListener("click", () => {
