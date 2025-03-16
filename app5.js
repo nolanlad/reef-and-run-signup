@@ -530,11 +530,6 @@ app.get('/log_times', async (req, res) => {
 });
 
 app.get('/swim_archive', async (req, res) => {
-  cookie = req.cookies['rnr_cookie']
-  if(!(await check_cookie(cookie,2))){
-    res.status(403).json({'message':'forbidden'})
-    return 
-  }
   res.sendFile(path.join(__dirname, 'swim_archive.html'));
 });
 
