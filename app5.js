@@ -529,6 +529,15 @@ app.get('/log_times', async (req, res) => {
   res.sendFile(path.join(__dirname, 'log_times.html'));
 });
 
+app.get('/swim_archive', async (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!(await check_cookie(cookie,2))){
+    res.status(403).json({'message':'forbidden'})
+    return 
+  }
+  res.sendFile(path.join(__dirname, 'swim_archive.html'));
+});
+
 app.get('/allswimmers', async (req, res) => {
   cookie = req.cookies['rnr_cookie']
   if(!(await check_cookie(cookie,2))){
@@ -1068,6 +1077,16 @@ app.get('/results/:swim_name',async (req,res)=>{
   }
   
 
+})
+
+app.get('/results',async (req,res) =>{
+  try{
+    data = await resultsDB.find()
+    res.status(200).json(data)
+  }
+  catch{
+    return res.status(500).json({'error':'internal server error'})
+  }
 })
 
 

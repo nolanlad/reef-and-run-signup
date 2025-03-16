@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Links List</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Previous Swims</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Swim</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody id="links">
+            </tbody>
+        </table>
+    </div>
+    <script>
+
+        function displayResults(data){
+            console.log(data)
+            acc = ''
+            for(x of data){
+                acc+=`<tr><td>${x.fname}</td><td><a href="/archive/${x.fname}" target="_blank">Visit</a></td></tr>`
+            }
+            document.getElementById('links').innerHTML = acc
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch('/results').then(x=>{
+                x.json().then(dummyData=>{
+                    displayResults(dummyData);
+                })
+            })
+            // displayResults(dummyData);
+        });
+    </script>
+
+</body>
+</html>
