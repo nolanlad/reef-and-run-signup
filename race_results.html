@@ -8,6 +8,53 @@
     <link rel="stylesheet" href="css/table.css">
     <script src="js/hamburger.js"></script>
     <style>
+        button {
+            background: #ff6b6b;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #ff4757;
+        }
+        .hidden { display: none; }
+
+        .dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        color: black;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 1000;
+    }
+    .hidden {
+        display: none;
+    }
+    .dialog button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+    #confirmEnd {
+        background: #d9534f;
+        color: white;
+    }
+    #cancelEnd {
+        background: #6c757d;
+        color: white;
+    }
         /* body {
             display: flex;
             flex-direction: column;
@@ -121,7 +168,15 @@
         <div></div>
         <div></div>
     </div>
-
+    <div></div>
+    <button id="saveBtn">Save Race Results</button>
+    <div id="confirmDialog" class="dialog hidden">
+        <p>Publish Race Resultss</p>
+        <label>Race Name</label>
+        <input id="raceName">
+        <button id="confirmEnd" onclick="publishRaceResults()">Publish</button>
+        <button id="cancelEnd" onclick='document.getElementById("confirmDialog").classList.toggle("hidden")'>Cancel</button>
+    </div>
     <!-- Side Menu -->
     <div class="side-menu">
         <ul>
@@ -133,178 +188,24 @@
             <li><a href="/join_swim2" >Create Swim</a></li>
         </ul>
     </div>
+    <script src="js/race_results.js"></script>
 
     <script>
-        const dummyData = [
-            { name: "Alice", race: "100m Freestyle", swim_time: 55, bib_num: 101, birthday: "2011-06-26T00:00:00.000Z", gender: "F" },
-            { name: "Bob", race: "200m Freestyle", swim_time: 110, bib_num: 102, birthday: "1995-02-14T00:00:00.000Z", gender: "M" },
-            { name: "Charlie", race: "100m Freestyle", swim_time: 60, bib_num: 103, birthday: "1988-09-05T00:00:00.000Z", gender: "M" },
-            { name: "Dave", race: "200m Freestyle", swim_time: 105, bib_num: 104, birthday: "1972-11-20T00:00:00.000Z", gender: "M" },
-            { name: "Eve", race: "100m Freestyle", swim_time: 58, bib_num: 105, birthday: "2003-07-30T00:00:00.000Z", gender: "F" },
-            { name: "Frank", race: "200m Freestyle", swim_time: 115, bib_num: 106, birthday: "1960-04-18T00:00:00.000Z", gender: "M" },
-            { name: "Grace", race: "100m Freestyle", swim_time: 57, bib_num: 107, birthday: "1980-12-10T00:00:00.000Z", gender: "F" }
-        ];
-
-        function format_time(time){
-            time = Math.floor(time)
-            hrs = Math.floor(time/(60*60))
-            mins = Math.floor(time/(60))
-            secs = time%60
-            return `${hrs}h ${mins}m ${secs}s`
+        
+        function publishRaceResults(){
+            input = document.getElementById('raceName').value;
+            fetch('/upload_race_results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fname:  input}) // Replace with your actual data
+            })
+            .then(response => response.json())
+            .then(data => {window.location.href = window.location.origin + `/archive/${input}`})
+            .catch(error => console.error('Error:', error));
 
         }
-
-        function calculateAge(birthday) {
-            const birthDate = new Date(birthday);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-            return age;
-        }
-
-        function getDivision(age, gender) {
-            let bracket;
-            if (age < 18) bracket = "17/Un";
-            else if (age < 25) bracket = "18-24";
-            else if (age < 35) bracket = "25-34";
-            else if (age < 40) bracket = "35-39";
-            else if (age < 45) bracket = "40-44";
-            else if (age < 50) bracket = "45-49";
-            else if (age < 55) bracket = "50-54";
-            else if (age < 60) bracket = "55-59";
-            else if (age < 65) bracket = "60-64";
-            else if (age < 70) bracket = "65-69";
-            else if (age < 75) bracket = "70-74";
-            else if (age < 80) bracket = "75-79";
-            else bracket = "80+";
-            return `${gender}${bracket}`;
-        }
-
-        function processRaceData(data) {
-        // const raceCategories = [...new Set(data.map(entry => entry.race))];
-        // const raceCategories = [ "500m","1000m", "1mile", "biath","" ]
-        const raceCategories = [ "500m","1000m", "1mile", "biath"]
-
-        return raceCategories.map(race => {
-            let raceData = data.filter(entry => entry.race === race);
-
-            // Compute age and division
-            raceData = raceData.map(entry => ({
-                ...entry,
-                age: calculateAge(entry.birthday),
-                division: getDivision(calculateAge(entry.birthday), entry.gender)
-            }));
-
-            // Separate valid and invalid times
-            let validEntries = raceData.filter(entry => entry.swim_time !== "");
-            let invalidEntries = raceData.filter(entry => entry.swim_time === "");
-
-            // Sort valid entries by swim time (fastest to slowest)
-            validEntries.sort((a, b) => a.swim_time - b.swim_time);
-
-            // Assign overall placement for valid entries
-            validEntries.forEach((entry, index) => entry.place = index + 1);
-
-            // Assign last places to invalid entries
-            invalidEntries.forEach((entry, index) => entry.place = validEntries.length + 1 + index);
-
-            // Combine valid and invalid entries back
-            raceData = [...validEntries, ...invalidEntries];
-
-            // Female placement
-            const femaleData = validEntries.filter(entry => entry.gender === "F");
-            femaleData.forEach((entry, index) => entry.fem_place = index + 1);
-
-            // Division placement with total count
-            const divisionGroups = {};
-            validEntries.forEach(entry => {
-                if (!divisionGroups[entry.division]) {
-                    divisionGroups[entry.division] = [];
-                }
-                divisionGroups[entry.division].push(entry);
-            });
-
-            Object.values(divisionGroups).forEach(group => {
-                group.sort((a, b) => a.swim_time - b.swim_time);
-                const totalInDivision = group.length;
-                group.forEach((entry, index) => entry.division_place = `${index + 1}/${totalInDivision}`);
-            });
-
-            // Assign "Not Finished" label for invalid swim times
-            invalidEntries.forEach(entry => {
-                entry.swim_time = "Not Finished";
-                entry.fem_place = "-";
-                entry.division_place = "-";
-            });
-
-            return { race, raceData };
-        });
-    }
-
-        function displayResults(data) {
-            const resultsContainer = document.getElementById("results");
-            resultsContainer.innerHTML = "";
-
-            const processedData = processRaceData(data);
-
-            processedData.forEach(({ race, raceData }) => {
-                const tableContainer = document.createElement("div");
-                tableContainer.classList.add("table-container");
-                // if(race ===""){
-                //     race = "Did not compete"
-                // }
-                // if(entry.ws === 'NWS'){
-                //     entry.ws = 'X'
-
-                // }
-                // else{
-                //     entry.ws = ''
-                // }
-
-                const tableHTML = `
-                    <h2>${race}</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Place</th>
-                                <th>Name</th>
-                                <th>Bib #</th>
-                                <th>Time (s)</th>
-                                <th>Age</th>
-                                <th>Gender</th>
-                                <th>Division</th>
-                                <th>Div. Place</th>
-                                <th>Fem Place</th>
-                                <th>NWS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${raceData.map(entry => `
-                                <tr>
-                                    <td>${entry.swim_time === 'Not Finished' ? '-': entry.place}</td>
-                                    <td>${entry.name}</td>
-                                    <td>${entry.bib_num}</td>
-                                    <td>${format_time(entry.swim_time)}</td>
-                                    <td>${entry.age}</td>
-                                    <td>${entry.gender}</td>
-                                    <td>${entry.division}</td>
-                                    <td>${entry.division_place}</td>
-                                    <td>${entry.gender === "F" ? entry.fem_place : "-"}</td>
-                                    <td>${entry.ws ==='NWS' ? 'X': ''}</td>
-                                </tr>
-                            `).join("")}
-                        </tbody>
-                    </table>
-                `;
-
-                tableContainer.innerHTML = tableHTML;
-                resultsContainer.appendChild(tableContainer);
-            });
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
             fetch('/currentswimmers').then(x=>{
                 x.json().then(dummyData=>{
@@ -313,6 +214,10 @@
             })
             // displayResults(dummyData);
         });
+        save_btn = document.getElementById('saveBtn')
+        save_btn.addEventListener('click',()=>{
+            document.getElementById('confirmDialog').classList.toggle('hidden')
+        })
     </script>
 </body>
 </html>
