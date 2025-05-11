@@ -428,17 +428,21 @@ app.get("/users/seasonpass", async (req, res) => {
   try {
     let user;
     if (name) {
-      user = await SeasonPass.findOne({ name });
+      // user = await SeasonPass.findOne({ name });
+      user = await PrimaryUser.findOne({ name });
     }
     else {
       return res.status(400).send({ error: "Provide a name or bib_num." });
     }
 
-    if (!user) {
-      return res.status(200).send({ status: "unpaid" });
+    // if (!user) {
+    //   return res.status(200).send({ status: "unpaid" });
+    // }
+    if(user.reg_type === 'Online' || user.reg_type === 'Season Pass'){
+      return res.status(200).send({ status: "paid" });
     }
     else{
-      return res.status(200).send({ status: "paid" });
+      return res.status(200).send({ status: "unpaid" });
     }
 
     // res.status(200).send(user);
@@ -606,10 +610,12 @@ async function get_bib_num(race){
     bib_num= count+500
   }
   if(race==='1000m'){
-    bib_num= count+1000
+    // bib_num= count+1000
+    bib_num = count + 700
   }
   if(race==='biath'){
-    bib_num= count+1500
+    // bib_num= count+1500
+    bib_num = count + 400
   }
   num_swimmers = await PrimaryUser.countDocuments({ });
   // return {bib_num:bib_num,num_swimmers:num_swimmers}
