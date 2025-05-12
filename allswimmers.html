@@ -21,6 +21,7 @@
                         <th>Birthday</th>
                         <th>Race</th>
                         <th>Reg. Type</th>
+                        <th>Season Pass</th>
                     </tr>
                 </thead>
                 <tbody id="swimmers">
@@ -59,7 +60,7 @@
                     bday = x.birthday.split('T')[0]
                 }
                 catch{}
-                acc+=`<tr><td>${x.name}</td><td>${x.bib_num}</td><td>${x.gender}</td><td>${bday}</td><td>${x.race}</td><td>${!x.reg_type ? 'Day of':x.reg_type}</td></tr>`
+                acc+=`<tr><td>${x.name}</td><td>${x.bib_num}</td><td>${x.gender}</td><td>${bday}</td><td>${x.race}</td><td>${!x.reg_type ? 'Day of':x.reg_type}</td><td>${x.sp}</td></tr>`
             }
             document.getElementById('swimmers').innerHTML = acc
         }

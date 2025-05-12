@@ -87,7 +87,8 @@ const primaryUserSchema = new mongoose.Schema({
   bib_num: { type: String, required: false },
   swim_time: { type: String, required: false },
   ws: {type: String,required: true},
-  reg_type: {type: String,required: false}
+  reg_type: {type: String,required: false},
+  sp: {type: Boolean,required: false}
 });
 
 const secondaryUserSchema = new mongoose.Schema({
@@ -296,16 +297,18 @@ async function parseCSV(csvString) {
           bib_num = ''
           swim_time = ''
           reg_type = 'Online'
-          sp = await SeasonPass.findOne({name})
-          console.log(sp)
+          sp = false
+          sp_ = await SeasonPass.findOne({name})
+          console.log(sp_)
           console.log(name)
-          if(sp){
-            reg_type = 'Season Pass'
+          if(sp_){
+            sp = true
+            
           }
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
           const user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,reg_type},
+            {birthday, race, gender,bib_num,swim_time,reg_type,sp},
             { new: true, upsert: true })
           const existingSecondaryUser = await SecondaryUser.findOne({ name });
           if (!existingSecondaryUser) {
@@ -427,8 +430,9 @@ app.get("/users/seasonpass", async (req, res) => {
 
   try {
     let user;
+    let user2;
     if (name) {
-      // user = await SeasonPass.findOne({ name });
+      user2 = await SeasonPass.findOne({ name });
       user = await PrimaryUser.findOne({ name });
     }
     else {
@@ -438,7 +442,11 @@ app.get("/users/seasonpass", async (req, res) => {
     // if (!user) {
     //   return res.status(200).send({ status: "unpaid" });
     // }
-    if(user.reg_type === 'Online' || user.reg_type === 'Season Pass'){
+    console.log(user2)
+    if(user2){
+      return res.status(200).send({ status: "paid" });
+    }
+    if(user.reg_type === 'Online'){
       return res.status(200).send({ status: "paid" });
     }
     else{
@@ -766,18 +774,44 @@ app.post("/users", async (req, res) => {
       // total_swimmers = temp.num_swimmers;
       // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
       // await newPrimaryUser.save();
-      const sp = await SeasonPass.findOne({ name });
-      if(sp){
-        reg_type = 'Season Pass'
-        user = await PrimaryUser.findOneAndUpdate({name},
-          {birthday, race, gender,bib_num,swim_time,ws,reg_type},
-          { new: true, upsert: true })
+      const user1 = await PrimaryUser.findOne({ name });
+      const sp_ = await SeasonPass.findOne({ name });
+      if(sp_){
+        let reg_type;
+        if(user1){
+
+          user = await PrimaryUser.findOneAndUpdate({name},
+            {birthday, race, gender,bib_num,swim_time,ws},
+            { new: true, upsert: true })
+          console.log('qqqq')
+          console.log(user)
+        }
+        else{
+          reg_type = 'Day of'
+          sp = true
+          user = await PrimaryUser.findOneAndUpdate({name},
+            {birthday, race, gender,bib_num,swim_time,ws,reg_type,sp},
+            { new: true, upsert: true })
+        }
+        // reg_type = 'Season Pass'
+        // user = await PrimaryUser.findOneAndUpdate({name},
+        //   {birthday, race, gender,bib_num,swim_time,ws,reg_type},
+        //   { new: true, upsert: true })
     
       }
       else{
-        user = await PrimaryUser.findOneAndUpdate({name},
-          {birthday, race, gender,bib_num,swim_time,ws},
-          { new: true, upsert: true })
+        if(user1){
+          user = await PrimaryUser.findOneAndUpdate({name},
+            {birthday, race, gender,bib_num,swim_time,ws},
+            { new: true, upsert: true })
+        }
+        else{
+          reg_type = 'Day of'
+          sp = false
+          user = await PrimaryUser.findOneAndUpdate({name},
+            {birthday, race, gender,bib_num,swim_time,ws,reg_type,sp},
+            { new: true, upsert: true })
+          }
 
       }
   
@@ -795,6 +829,7 @@ app.post("/users", async (req, res) => {
         bib_num: bib_num,
         total_swimmers:total_swimmers});
     } catch (error) {
+      console.log(error)
       if (error.code === 11000) {
         res.status(409).send({ error: "User with this name already exists in the primary database." });
       } else {
@@ -1053,10 +1088,14 @@ app.post('/upload_race_results',async (req,res)=>{
   catch{
     return res.status(500).json({'error':'no swim started'})
   }
-  //save the key pair 
-  const swim_file = new resultsDB({fname:fname,dbname:db1})
-  swim_file.save()
-  return res.status(200).json({'message':'record created'})
+  try{
+    const swim_file = new resultsDB({fname:fname,dbname:db1})
+    swim_file.save()
+    return res.status(200).json({'message':'record created'})
+  }
+  catch{
+    return res.status(500).json({'error':'internal server error'})
+  }
 
 
 
