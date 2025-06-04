@@ -173,7 +173,7 @@
     <div id="confirmDialog" class="dialog hidden">
         <p>Publish Race Resultss</p>
         <label>Race Name</label>
-        <input id="raceName">
+        <input id="raceName" value="">
         <button id="confirmEnd" onclick="publishRaceResults()">Publish</button>
         <button id="cancelEnd" onclick='document.getElementById("confirmDialog").classList.toggle("hidden")'>Cancel</button>
     </div>
@@ -217,6 +217,12 @@
         save_btn = document.getElementById('saveBtn')
         save_btn.addEventListener('click',()=>{
             document.getElementById('confirmDialog').classList.toggle('hidden')
+        })
+
+        fetch("/swims/current").then(x=>{
+            x.json().then(data=>{
+                document.getElementById('raceName').value = data.status
+            })
         })
     </script>
 </body>

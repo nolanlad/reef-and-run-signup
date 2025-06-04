@@ -3,7 +3,8 @@
     cursor: pointer;
     padding: 15px;
     position: fixed;
-    top: 20px;
+    /* top: 20px; */
+    bottom: 10px;
     right: 20px;
     z-index: 100;
     /* background: white; */

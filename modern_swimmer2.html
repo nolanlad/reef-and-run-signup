@@ -411,8 +411,8 @@
                 status = x.status
                 x.json().then(x => {
                     if(status==201){
-                        document.getElementById('swimmerCount').innerText = `Number of Swimmers ${x.total_swimmers}`
-                        document.getElementById('bib').innerText = `Swimmer Bib Number ${x.bib_num}`
+                        document.getElementById('swimmerCount').innerText = `Total # ${x.total_swimmers}`
+                        document.getElementById('bib').innerText = `Bib # ${x.bib_num}`
                         console.log(x)
                     }
                     else{

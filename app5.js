@@ -505,7 +505,7 @@ app.get('/join_swim2', async (req, res) => {
 
 app.get('/start_race', async (req, res) => {
   cookie = req.cookies['rnr_cookie']
-  if(!(await check_cookie(cookie,1))){
+  if(!(await check_cookie(cookie,2))){
     res.status(403).json({'message':'forbidden'})
     return 
   }
@@ -905,6 +905,11 @@ app.patch("/users/swim-time", async (req, res) => {
     if (!bib_num || !time) {
       return res.status(400).send({ error: "Both bib_num and time are required." });
     }
+    const exists = await PrimaryUser.findOne({bib_num});
+    console.log('////',exists)
+    if(exists.swim_time!==''){
+      return res.status(400).send({ error: "Time for this swimmer already logged"});
+    }
   
     try {
       // Find and update the user by bib_num
@@ -1057,7 +1062,7 @@ app.get('/race', async (req,res)=>{
 
 app.get('/race/restart', async (req,res)=>{
   cookie = req.cookies['rnr_cookie']
-  if(!(await check_cookie(cookie,2))){
+  if(!(await check_cookie(cookie,1))){
     res.status(403).json({'message':'forbidden'})
     return
   }

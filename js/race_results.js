@@ -1,6 +1,6 @@
-function format_time(time){
+ function format_time(time){
     if(time === 'Not Finished'){
-        return 'Not Finished'
+        return 'DNF'
     }
     time = Math.floor(time)
     hrs = Math.floor(time/(60*60))
