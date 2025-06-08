@@ -380,13 +380,18 @@
             fetch(`/users/seasonpass?name=${name}`).then(x => {
                 x.json().then(x => {
                     console.log(x)
-                    if(x.status === 'paid'){
+                    if(x.status === 'paid' && x.waiver_status==='signed'){
                         box.className = 'green'
                         box.innerText = 'PAID\nWAIVER SIGNED'
+                        console.log('poop')
                     }
-                    else{
+                    if(x.status === 'unpaid' && x.waiver_status==='signed'){
                         box.className = 'red'
-                        box.innerText = 'PAYMENT REQUIRED\nWAIVER NEEDED'
+                        box.innerText = 'PAYMENT REQUIRED\nWAIVER SIGNED'
+                    }
+                    if(x.status === 'unpaid' && x.waiver_status==='unsigned'){
+                        box.className = 'red'
+                        box.innerText = 'PAYMENT REQUIRED\nWAIVER REQUIRED'
                     }
                     return x
                 })

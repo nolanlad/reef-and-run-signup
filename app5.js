@@ -136,6 +136,15 @@ const swimSchema = new mongoose.Schema({
     dbname: { type: String, required: true },
   });
 
+  const bibCounterSchema = new mongoose.Schema({
+    race: { type: String, required: true },
+    count: { type: Number, required: true },
+  });
+
+  const waiverSchema = new mongoose.Schema({
+    name: { type: String, required: true }
+  });
+
 
 // const PrimaryUser = mongoose.model("PrimaryUser2", primaryUserSchema);
 PrimaryUser = null;
@@ -147,11 +156,113 @@ const Swim = mongoose.model("Swim", swimSchema);
 const SeasonPass = mongoose.model("SeasonPass", seasonPassSchema);
 const cookieDB = mongoose.model('ccookie',cookieSchema)
 const resultsDB = mongoose.model('results',resultsSchema)
+const bibCounter = mongoose.model('bibCounter',bibCounterSchema)
+const waivers = mongoose.model('waivers',waiverSchema)
+
+
 Swim.findOne({is_current: true}).then(x=>{
   if(x){
     console.log('joining swim: '+x.swim_name)
     PrimaryUser = mongoose.model(x.swim_name, primaryUserSchema);
+    reInitializeRaces();
   }
+})
+
+async function init_counter(){
+  const newSecondaryUser = new SecondaryUser({ race: "1000m", count:0 });
+  await newSecondaryUser.save();
+}
+
+// if(race==='1mile'){
+//   bib_num= count+1
+// }
+// if(race==='500m'){
+//   bib_num= count+500
+// }
+// if(race==='1000m'){
+//   // bib_num= count+1000
+//   bib_num = count + 700
+// }
+// if(race==='biath'){
+//   // bib_num= count+1500
+//   bib_num = count + 400
+
+async function initializeRaces() {
+  const races = [{race:'1000m',count:700}, 
+    {race:'500m',count:500}, 
+    {race:'1mile',count:0}, {race:'biath',count:400}];
+
+  for (const r of races) {
+    race = r.race;
+    const exists = await bibCounter.findOne({ race });
+    if (!exists) {
+      await bibCounter.create({ race: r.race, count: r.count });
+      console.log(`Initialized ${r.race}`);
+    }
+    else{
+      await bibCounter.findOneAndUpdate({race},
+        {count: r.count}
+      )
+      console.log(`Initialized? ${r.race}`);
+    }
+  }
+  // const races = ['1000m', '500m', '1mile', 'biath'];
+  // const bulkOps = races.map(race => ({
+  //   updateOne: {
+  //     filter: { race },
+  //     update: { $setOnInsert: { count: 0 } },
+  //     upsert: true,
+  //   }
+  // }));
+
+  // await bibCounter.bulkWrite(bulkOps);
+}
+
+async function reInitializeRaces() {
+  c1000m = await get_bib_num('1000m');
+  c500m = await get_bib_num('500m');
+  c1mile = await get_bib_num('1mile');
+  cbiath = await get_bib_num('biath');
+  const races = [{race:'1000m',count:c1000m.bib_num}, 
+    {race:'500m',count:c500m.bib_num}, 
+    {race:'1mile',count:c1mile.bib_num}, {race:'biath',count:cbiath.bib_num}];
+
+  for (const r of races) {
+    race = r.race;
+    const exists = await bibCounter.findOne({ race });
+    if (!exists) {
+      await bibCounter.create({ race: r.race, count: r.count });
+      console.log(`Initialized ${r.race}`);
+    }
+    else{
+      await bibCounter.findOneAndUpdate({race},
+        {count: r.count}
+      )
+      console.log(`Initialized? ${r.race}`);
+    }
+  }
+}
+
+async function incrementRaceCounter(race) {
+  const result = await bibCounter.findOneAndUpdate(
+    { race },
+    { $inc: { count: 1 } },
+    { new: true, upsert: true } // creates if missing
+  );
+
+  console.log(`Updated ${race} count to ${result.count}`);
+  return result.count;
+}
+
+app.get('/inc',async  (req, res) => {
+  race = req.query.race;
+  const bib_n = await incrementRaceCounter(race);
+  res.status(200).json(bib_n)
+})
+
+app.get('/init_count',async  (req, res) => {
+  await initializeRaces();
+  res.status(200).json({message:'good'})
 })
 
 async function add_season_pass() {
@@ -322,57 +433,51 @@ async function parseCSV(csvString) {
   return result;
 }
 
-async function parseCSV_seasonpass(csvString) {
+async function parseCSV_waivers(csvString) {
   const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
   const result = [];
 
   for (let line of lines) {
       // Regular expression to match CSV values, handling both quoted and unquoted values
-      const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, ''));
-      
-      if (values.length === 3) { // Ensure we have all 3 expected values
-          result.push({
-              name: values[0],
-              dateOfBirth: values[1],
-              gender: values[2]
-          });
-          name = values[0]
-          birthday = values[1]
-          gender = values[2]
-          if (gender === 'Female'){
-            gender = 'F'
-          }
-          if (gender === 'Male'){
-            gender = 'M'
-          }
-          race = ''
-          bib_num = ''
-          swim_time = ''
-          ws = ''
-          reg_type = 'Season Pass'
-          // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
-          // await newPrimaryUser.save();
-          // const user = await PrimaryUser.findOneAndUpdate({name},
-          //   {birthday, race, gender,bib_num,swim_time,ws,reg_type},
-          //   { new: true, upsert: true })
-          // await PrimaryUser.findOneAndUpdate({name},
-          //     {birthday, race, gender,bib_num,swim_time},
-          //     { new: true, upsert: true })
-          await SeasonPass.findOneAndUpdate({name},
-            {birthday,gender},
-            { new: true, upsert: true });
-        
-          const existingSecondaryUser = await SecondaryUser.findOne({ name });
-          if (!existingSecondaryUser) {
-            const newSecondaryUser = new SecondaryUser({ name, birthday, gender });
-            await newSecondaryUser.save();
-          }
-          console.log(values)
+      name = line.replace(/['",]/g, '').toLowerCase()
+      console.log(name)
+      user = await waivers.findOne({name});
+      console.log(user)
+      if(!user){
+        console.log('!',name)
+        const entry = await waivers.findOneAndUpdate({name},{name},{ new: true, upsert: true })
+        console.log(entry)
       }
+
   }
 
   return result;
 }
+
+app.post('/upload-waivers',async  (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+  if(!(await check_cookie(cookie,1))){
+    res.status(403).json({'message':'forbidden'})
+    return
+  }
+  //authenticate
+  // if(!check_cookie(cookie,1)){
+  //   res.status(403).json({'message':'forbidden'})
+  // }
+
+  const fileName = req.headers['file-name'] || `upload_${Date.now()}.csv`;
+  const filePath = path.join(__dirname, fileName);
+
+  if (!req.body || req.body.length === 0) {
+      return res.status(400).json({ error: 'No file content received' });
+  }
+
+  // Convert buffer to string (CSV content)
+  const csvData = req.body.toString();
+  await parseCSV_waivers(csvData);
+return res.status(200).json({'message':'file uploaded sucessfully'})
+  
+});
 
 app.post('/upload-csv',async  (req, res) => {
   cookie = req.cookies['rnr_cookie']
@@ -428,7 +533,7 @@ app.get("/users/seasonpass", async (req, res) => {
   }
   const { name } = req.query;
 
-  try {
+  // try {
     let user;
     let user2;
     if (name) {
@@ -444,19 +549,32 @@ app.get("/users/seasonpass", async (req, res) => {
     // }
     console.log(user2)
     if(user2){
-      return res.status(200).send({ status: "paid" });
+      return res.status(200).send({ status: "paid", waiver_status:'signed' });
+    }
+    if(!user){
+      name1 = name.toLowerCase()
+      entry = await waivers.findOne({name:name1})
+      if(entry){
+        return res.status(200).send({ status: "unpaid",waiver_status: 'signed' });
+      }
+      return res.status(200).send({ status: "unpaid",waiver_status: 'unsigned' });
     }
     if(user.reg_type === 'Online'){
-      return res.status(200).send({ status: "paid" });
+      return res.status(200).send({ status: "paid", waiver_status:'signed'  });
     }
     else{
-      return res.status(200).send({ status: "unpaid" });
+      name1 = name.toLowerCase()
+      entry = await waivers.findOne({name:name1})
+      if(entry){
+        return res.status(200).send({ status: "unpaid",waiver_status: 'signed' });
+      }
+      return res.status(200).send({ status: "unpaid",waiver_status: 'unsigned' });
     }
 
     // res.status(200).send(user);
-  } catch (error) {
-    res.status(500).send({ error: "Internal Server Error", details: error });
-  }
+  // } catch (error) {
+  //   res.status(500).send({ error: "Internal Server Error", details: error });
+  // }
 });
 
 
@@ -481,6 +599,16 @@ app.get('/upload', async (req, res) => {
     return 
   }
   res.sendFile(path.join(__dirname, 'upload.html'));
+});
+
+app.get('/upload_waivers', async (req, res) => {
+  cookie = req.cookies['rnr_cookie']
+
+  if(!(await check_cookie(cookie,1))){
+    res.status(403).json({'message':'forbidden'})
+    return 
+  }
+  res.sendFile(path.join(__dirname, 'upload_waivers.html'));
 });
 
 app.get('/upload-seasonpass', async (req, res) => {
@@ -665,7 +793,7 @@ async function clear_swims(){
         start_new_race();
       PrimaryUser = mongoose.model(swim_name, primaryUserSchema);
       // add_season_pass() //add season pass holders
-
+      initializeRaces() //initialize counters
       res.status(201).send({ message: "Swim added successfully." });
     } catch (error) {
       if (error.code === 11000) {
@@ -770,7 +898,9 @@ app.post("/users", async (req, res) => {
       console.log(ws)
       swim_time = ''
       temp = await get_bib_num(race);
-      bib_num = temp.bib_num;
+
+      const bib_num1 = await incrementRaceCounter(race);
+      console.log('F',bib_num1)
       // total_swimmers = temp.num_swimmers;
       // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
       // await newPrimaryUser.save();
@@ -779,9 +909,9 @@ app.post("/users", async (req, res) => {
       if(sp_){
         let reg_type;
         if(user1){
-
+          // bib_num = await incrementRaceCounter(race);
           user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,ws},
+            {birthday, race, gender,bib_num:bib_num1,swim_time,ws},
             { new: true, upsert: true })
           console.log('qqqq')
           console.log(user)
@@ -789,9 +919,12 @@ app.post("/users", async (req, res) => {
         else{
           reg_type = 'Day of'
           sp = true
+          // bib_num = await incrementRaceCounter(race);
+
           user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,ws,reg_type,sp},
+            {birthday, race, gender,bib_num:bib_num1,swim_time,ws,reg_type,sp},
             { new: true, upsert: true })
+          console.log('what the hell',user)
         }
         // reg_type = 'Season Pass'
         // user = await PrimaryUser.findOneAndUpdate({name},
@@ -801,17 +934,22 @@ app.post("/users", async (req, res) => {
       }
       else{
         if(user1){
+          // bib_num = await incrementRaceCounter(race);
+          console.log(bib_num1)
           user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,ws},
+            {birthday, race, gender,bib_num:bib_num1,swim_time,ws},
             { new: true, upsert: true })
         }
         else{
           reg_type = 'Day of'
           sp = false
+          // bib_num = await incrementRaceCounter(race);
+          console.log(bib_num1)
           user = await PrimaryUser.findOneAndUpdate({name},
-            {birthday, race, gender,bib_num,swim_time,ws,reg_type,sp},
+            {birthday, race, gender,bib_num:bib_num1,swim_time,ws,reg_type,sp},
             { new: true, upsert: true })
           }
+          console.log('what the hell',user)
 
       }
   
@@ -826,7 +964,7 @@ app.post("/users", async (req, res) => {
   
       res.status(201).send({ message: "User added successfully.",
         user: user,
-        bib_num: bib_num,
+        bib_num: bib_num1,
         total_swimmers:total_swimmers});
     } catch (error) {
       console.log(error)
