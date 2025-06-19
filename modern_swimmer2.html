@@ -302,28 +302,69 @@
                 <input type="date" id="birthday" name="birthday" required>
 
                 <label for="gender">Gender</label>
-                <select id="gender" name="gender" required>
+                <!-- <select id="gender" name="gender" required>
                     <option value="" disabled selected>Gender</option>
                     <option value="M">Male</option>
                     <option value="F">Female</option>
                     <option value="O">Other</option>
-                </select>
-                
+                </select> -->
+                <form style="display: flex; justify-content: space-between; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                      Male
+                      <input type="radio" name="gender" style="margin: 0;" value="M">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                      Female
+                      <input type="radio" name="gender" style="margin: 0;" value="F">
+                    </div>
+                </form>
+                  
+                <label></label>
+                  
                 <label for="race">Select race</label>
-                <select id="race" name="race" required>
+                <!-- <select id="race" name="race" required>
                     <option value="" disabled selected>Choose Race</option>
                     <option value="500m">500m</option>
                     <option value="1000m">1000m</option>
                     <option value="1mile">1 Mile</option>
                     <option value="biath">Biathalon</option>
-                </select>
+                </select> -->
+                <form style="display: flex; justify-content: space-between; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                      500m
+                      <input type="radio" name="race" style="margin: 0;" value="500m">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                      1000m
+                      <input type="radio" name="race" style="margin: 0;" value="1000m">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                        1 Mile
+                        <input type="radio" name="race" style="margin: 0;" value="1mile">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                        Biathalon
+                        <input type="radio" name="race" style="margin: 0;" value="biath">
+                    </div>
+                </form>
+                <label></label>
                 <label for="ws">Wetsuit?</label>
-                <select id="ws" name="ws" required>
+                <!-- <select id="ws" name="ws" required>
                     <option value="" disabled selected>WS/NWS</option>
                     <option value="WS">Wetsuit</option>
                     <option value="NWS">No Wetsuit</option>
-                </select>
-
+                </select> -->
+                <form style="display: flex; justify-content: space-between; width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                      Wetsuit
+                      <input type="radio" name="ws" style="margin: 0;" value="WS">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                      No Wetsuit
+                      <input type="radio" name="ws" style="margin: 0;" value="NWS">
+                    </div>
+                </form>
+                <label></label>
                 <button onclick="button_click()">Submit</button>
                 <label></label>
                 <!-- <button onclick="startRace()">Start Race</button> -->
@@ -353,6 +394,11 @@
         // });
 
         // Original Functions
+        function clearRadioButtons() {
+            const radios = document.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => radio.checked = false);
+        }
+
         function startRace() {
             window.location.href = window.location.origin + '/start_race';
         }
@@ -434,17 +480,21 @@
             console.log('update')
             name = document.getElementById('name').value;
             bday = document.getElementById('birthday').value;
-            gender = document.getElementById('gender').value
-            race = document.getElementById('race').value
-            ws = document.getElementById('ws').value
+            // gender = document.getElementById('gender').value
+            gender = document.querySelector('input[name="gender"]:checked').value;
+            // race = document.getElementById('race').value
+            race = document.querySelector('input[name="race"]:checked').value;
+            // ws = document.getElementById('ws').value
+            ws = document.querySelector('input[name="ws"]:checked').value;
             upload_swimmer(name, bday, race, gender,ws)
+            clearRadioButtons()
 
-            document.getElementById('name').value = ''
-            document.getElementById('birthday').value = ''
-            document.getElementById('gender').value = ''
-            document.getElementById('race').value = ''
-            document.getElementById('searchBar').value = ''
-            document.getElementById('ws').value = ''
+            // document.getElementById('name').value = ''
+            // document.getElementById('birthday').value = ''
+            // document.getElementById('gender').value = ''
+            // document.getElementById('race').value = ''
+            // document.getElementById('searchBar').value = ''
+            // document.getElementById('ws').value = ''
         }
 
         const searchBar = document.getElementById("searchBar");
@@ -484,7 +534,8 @@
                                     x.json().then(x => {
                                         document.getElementById('birthday').value = x.birthday.split('T')[0]
                                         console.log('bday', x.bday)
-                                        document.getElementById('gender').value = x.gender
+                                        // document.getElementById('gender').value = x.gender
+                                        document.querySelector(`input[name="gender"][value="${x.gender}"]`).checked = true; 
                                     })
                                 })
                                 searchBar.value = suggestion;

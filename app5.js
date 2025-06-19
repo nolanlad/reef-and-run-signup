@@ -60,7 +60,7 @@ app.use((req, res, next) => {
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${req.ip}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${req.ip} ${JSON.stringify(req.body)}`);
 
     next();
   });
@@ -381,27 +381,38 @@ app.post('/login_reefnrun',async (req,res) => {
 
 })
 
+function isValidDate(str) {
+  const date = new Date(str);
+  return !isNaN(date.getTime());
+}
+
 async function parseCSV(csvString) {
-  const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  // const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
   const result = [];
 
-  for (let line of lines) {
+  for (let line of lines.slice(1)) {
       // Regular expression to match CSV values, handling both quoted and unquoted values
       const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, ''));
-      
-      if (values.length === 4) { // Ensure we have all 3 expected values
+      // console.log(values)
+      if (values.length === 3) { // Ensure we have all 3 expected values
           result.push({
-              name: values[1],
-              dateOfBirth: values[2],
-              gender: values[3]
+              name: values[0],
+              dateOfBirth: values[1],
+              gender: values[2]
           });
-          name = values[1]
-          birthday = values[2]
-          gender = values[3]
-          if (gender === 'Female'){
+          name = values[0]
+          birthday = values[1]
+          if(!isValidDate(birthday)){
+            console.log('invalid date',birthday);
+            birthday = '1/1/1901';
+          }
+          gender = values[2]
+          // if (gender === 'Female'){
+          if (/[fF]/.test(gender)){
             gender = 'F'
           }
-          if (gender === 'Male'){
+          if (/[mM]/.test(gender)){
             gender = 'M'
           }
           race = ''
@@ -418,6 +429,7 @@ async function parseCSV(csvString) {
           }
           // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
           // await newPrimaryUser.save();
+          
           const user = await PrimaryUser.findOneAndUpdate({name},
             {birthday, race, gender,bib_num,swim_time,reg_type,sp},
             { new: true, upsert: true })
@@ -434,7 +446,9 @@ async function parseCSV(csvString) {
 }
 
 async function parseCSV_waivers(csvString) {
-  const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  // const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
+  console.log(lines)
   const result = [];
 
   for (let line of lines) {
@@ -1200,7 +1214,7 @@ app.get('/race', async (req,res)=>{
 
 app.get('/race/restart', async (req,res)=>{
   cookie = req.cookies['rnr_cookie']
-  if(!(await check_cookie(cookie,1))){
+  if(!(await check_cookie(cookie,2))){
     res.status(403).json({'message':'forbidden'})
     return
   }
@@ -1219,7 +1233,7 @@ app.get('/race/restart', async (req,res)=>{
 
 app.post('/upload_race_results',async (req,res)=>{
   cookie = req.cookies['rnr_cookie']
-  if(!(await check_cookie(cookie,1))){
+  if(!(await check_cookie(cookie,2))){
     res.status(403).json({'message':'forbidden'})
     return
   }
