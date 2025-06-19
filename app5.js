@@ -445,6 +445,106 @@ async function parseCSV(csvString) {
   return result;
 }
 
+async function parseCSV_seasonpass(csvString) {
+    // at some point this function was removed ? 
+    const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
+  
+    const result = [];
+  
+  
+  
+    for (let line of lines) {
+  
+        // Regular expression to match CSV values, handling both quoted and unquoted values
+  
+        const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, ''));
+  
+  
+  
+        if (values.length === 3) { // Ensure we have all 3 expected values
+  
+            result.push({
+  
+                name: values[0],
+  
+                dateOfBirth: values[1],
+  
+                gender: values[2]
+  
+            });
+  
+            name = values[0]
+  
+            birthday = values[1]
+  
+            gender = values[2]
+  
+            if (gender === 'Female'){
+  
+              gender = 'F'
+  
+            }
+  
+            if (gender === 'Male'){
+  
+              gender = 'M'
+  
+            }
+  
+            race = ''
+  
+            bib_num = ''
+  
+            swim_time = ''
+  
+            ws = ''
+  
+            // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
+  
+            // await newPrimaryUser.save();
+  
+            const user = await PrimaryUser.findOneAndUpdate({name},
+  
+              {birthday, race, gender,bib_num,swim_time,ws},
+  
+              { new: true, upsert: true })
+  
+            await PrimaryUser.findOneAndUpdate({name},
+  
+                {birthday, race, gender,bib_num,swim_time},
+  
+                { new: true, upsert: true })
+  
+            await SeasonPass.findOneAndUpdate({name},
+  
+              {birthday,gender},
+  
+              { new: true, upsert: true });
+  
+  
+  
+            const existingSecondaryUser = await SecondaryUser.findOne({ name });
+  
+            if (!existingSecondaryUser) {
+  
+              const newSecondaryUser = new SecondaryUser({ name, birthday, gender });
+  
+              await newSecondaryUser.save();
+  
+            }
+  
+            console.log(values)
+  
+        }
+  
+    }
+  
+  
+  
+    return result;
+  
+  }
+
 async function parseCSV_waivers(csvString) {
   // const lines = csvString.trim().split("\n").slice(1); // Split by line breaks
   const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
