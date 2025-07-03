@@ -195,6 +195,8 @@
 
     <script>
 
+        logged_bibs = [];
+
         function format_time(time){
             time = Math.floor(time)
             hrs = Math.floor(time/(60*60))
@@ -276,6 +278,18 @@
             return Math.floor(Date.now() / 1000) - start_t
         }
 
+        async function debug_post(){
+            fetch('/debug', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(logged_bibs)
+            })
+        }
+
+        setInterval(debug_post,5000)
+
         document.addEventListener("DOMContentLoaded", () => {
             
             let raceStarted = false;
@@ -319,6 +333,7 @@
             inputForm.addEventListener("submit", (e) => {
                 e.preventDefault();
                 let bib_num = nameInput.value.trim();
+                logged_bibs.push(bib_num)
                 if (bib_num === "") return;
                 const card = document.createElement("div");
                 card.classList.add("card");
