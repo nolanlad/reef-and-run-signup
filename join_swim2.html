@@ -170,6 +170,38 @@
       text-align: center;
       margin-top: 50px;
     }
+    .dialog2 {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        color: black;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        z-index: 1000;
+    }
+    .hidden {
+        display: none;
+    }
+    .dialog2 button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+    #confirmEnd {
+        background: #d9534f;
+        color: white;
+    }
+    #cancelEnd {
+        background: #6c757d;
+        color: white;
+    }
   </style>
 </head>
 <body>
@@ -200,6 +232,15 @@
 
   <!-- Swim Cards -->
   <div id="swim-container"></div>
+
+  <div id="confirmDialog" class="dialog2 hidden">
+    <p>Are you sure you want to delete the race?</p>
+    <button id="confirmEnd" onclick='deleteSwimConfirmDialog()'>Confirm</button>
+    <!-- delete_swim(swim.swim_name);
+          // document.getElementById(swim.swim_name).remove(); -->
+    <button id="cancelEnd" onclick='closeConfirmDialog()'>Cancel</button>
+  </div>
+
 </div>
 
 <!-- Overlay -->
@@ -220,6 +261,19 @@
     // sname_feild.value = 'RNR_'+new Date().toISOString().split('T')[0];
   const landing_page = '/modern_swimmer2';
 
+  function closeConfirmDialog(){
+    box = document.getElementById('confirmDialog')
+    box.classList.add('hidden')
+  }
+  function deleteSwimConfirmDialog(){
+    console.log('starting delete')
+    delete_swim(selected_swim);
+    document.getElementById(selected_swim).remove();
+    box = document.getElementById('confirmDialog')
+    box.classList.add('hidden')
+    console.log('ending delete')
+  }
+
   async function delete_swim(swim_name) {
     fetch('/swims/close', {
         method: "POST",
@@ -238,7 +292,7 @@
 
   // Display swims
   const swimContainer = document.getElementById('swim-container');
-
+  selected_swim = null;
   function displaySwims(swims) {
     swimContainer.innerHTML = "";
     if (swims.length === 0) {
@@ -268,8 +322,11 @@
         endButton.className = 'end-btn';
         endButton.textContent = 'End';
         endButton.onclick = () => {
-          delete_swim(swim.swim_name);
-          document.getElementById(swim.swim_name).remove();
+          document.getElementById('confirmDialog').classList.remove('hidden')
+          selected_swim = swim.swim_name
+          // delete_swim(swim.swim_name);
+          // document.getElementById(swim.swim_name).remove();
+          
         };
 
         buttonContainer.appendChild(joinButton);
@@ -295,8 +352,9 @@
   }
 
   function closeDialog() {
-    document.getElementById('createSwimDialog').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
+    // document.getElementById('createSwimDialog').style.display = 'none';
+    // document.getElementById('overlay').style.display = 'none';
+    document.getElementById('overlay')
   }
 
   async function submitSwim() {
