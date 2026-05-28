@@ -249,6 +249,7 @@
         @media (max-width: 600px) {
             .form-container {
                 width: 100%;
+                padding: 16px;
             }
         }
     </style>
@@ -298,8 +299,12 @@
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" placeholder="Enter your name" required>
 
-                <label for="birthday">Birthday</label>
-                <input type="date" id="birthday" name="birthday" required>
+                <!-- <label for="birthday">Birthday</label>
+                <input type="date" id="birthday" name="birthday" required> -->
+
+                <label for="name">Birthday</label>
+                <input type="tel" id="bday" name="birthday" placeholder="mm/dd/yyyy" required>
+                <input type="hidden" id="birthday">
 
                 <label for="gender">Gender</label>
                 <!-- <select id="gender" name="gender" required>
@@ -343,7 +348,7 @@
                         <input type="radio" name="race" style="margin: 0;" value="1mile">
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
-                        Biathalon
+                        Biath
                         <input type="radio" name="race" style="margin: 0;" value="biath">
                     </div>
                 </form>
@@ -394,6 +399,37 @@
         // });
 
         // Original Functions
+        const birthdayDisplay = document.getElementById('bday');
+        let birthdayDigits = '';
+
+        birthdayDisplay.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                birthdayDigits = birthdayDigits.slice(0, -1);
+                updateBirthdayDisplay();
+            }
+        });
+
+        birthdayDisplay.addEventListener('input', function(e) {
+            const newDigits = e.target.value.replace(/\D/g, '');
+            birthdayDigits = newDigits.slice(0, 8);
+            updateBirthdayDisplay();
+        });
+
+        function updateBirthdayDisplay() {
+            let mm   = (birthdayDigits.slice(0, 2) + '  ').slice(0, 2);
+            let dd   = (birthdayDigits.slice(2, 4) + '  ').slice(0, 2);
+            let yyyy = (birthdayDigits.slice(4, 8) + '    ').slice(0, 4);
+
+            birthdayDisplay.value = `${mm}/${dd}/${yyyy}`;
+
+            const pos = birthdayDigits.length + (birthdayDigits.length >= 4 ? 2 : birthdayDigits.length >= 2 ? 1 : 0);
+            birthdayDisplay.setSelectionRange(pos, pos);
+
+            document.getElementById('birthday').value = birthdayDigits.length === 8
+                ? `${birthdayDigits.slice(4,8)}-${birthdayDigits.slice(0,2)}-${birthdayDigits.slice(2,4)}`
+                : '';
+        }
         function clearRadioButtons() {
             const radios = document.querySelectorAll('input[type="radio"]');
             radios.forEach(radio => radio.checked = false);
@@ -532,7 +568,11 @@
                                 document.getElementById('name').value = suggestion
                                 fetch(`/userinfo?name=${suggestion}`).then(x => {
                                     x.json().then(x => {
-                                        document.getElementById('birthday').value = x.birthday.split('T')[0]
+                                        bd = x.birthday.split('T')[0]
+                                        document.getElementById('birthday').value = bd;
+                                        bd = bd.split('-')
+                                        document.getElementById('bday').value = bd[1]+'/'+bd[2]+'/'+bd[0]
+
                                         console.log('bday', x.bday)
                                         // document.getElementById('gender').value = x.gender
                                         document.querySelector(`input[name="gender"][value="${x.gender}"]`).checked = true; 
