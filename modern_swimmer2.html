@@ -224,6 +224,30 @@
         .form-container button:active {
             transform: scale(0.98);
         }
+        .hidden {
+            display: none;
+        }
+        .dialog2 {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            z-index: 1000;
+        }
+        .dialog2 button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
         /* .error-message {
             position: fixed;
             bottom: 20px;
@@ -260,6 +284,13 @@
         <span id="errorText">An error occurred. Please try again.</span>
         <button onclick="closeErrorMessage()">×</button>
     </div>
+    <div id="confirmDialog" class="dialog2 hidden">
+        <p>This swimmer was already signed up. Continue?</p>
+        <button id="confirmEnd" onclick='button_click2()'>Confirm</button>
+        <!-- delete_swim(swim.swim_name);
+              // document.getElementById(swim.swim_name).remove(); -->
+        <button id="cancelEnd" onclick='closeConfirmDialog()'>Cancel</button>
+      </div>
     <!-- Hamburger Menu Button -->
     <div class="hamburger" onclick="toggleMenu()">
         <div></div>
@@ -378,6 +409,10 @@
     </div>
     <script src="js/hamburger.js"></script>
     <script>
+        function closeConfirmDialog(){
+            box = document.getElementById('confirmDialog')
+            box.classList.add('hidden')
+        }
         // Hamburger Menu Functions
         // function toggleMenu() {
         //     const hamburger = document.querySelector('.hamburger');
@@ -480,8 +515,8 @@
             })
         }
 
-        function upload_swimmer(name, bday, race, gender,ws) {
-            fetch('/users', {
+        async function upload_swimmer(name, bday, race, gender,ws,sure) {
+            await fetch('/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -491,7 +526,8 @@
                     birthday: bday,
                     race: race,
                     gender: gender,
-                    ws: ws
+                    ws: ws,
+                    sure:sure
                 })
             })
             .then(x => {
@@ -501,19 +537,64 @@
                         document.getElementById('swimmerCount').innerText = `Total # ${x.total_swimmers}`
                         document.getElementById('bib').innerText = `Bib # ${x.bib_num}`
                         console.log(x)
+
+                        document.getElementById('name').value = ''
+                        document.getElementById('birthday').value = ''
+                        document.getElementById('searchBar').value = ''
+                        clearRadioButtons()
+                        get_payment_status(name)
+                        return 'success'
+                    }
+                    if(status ==202){
+                        console.log('ssss')
+                        document.getElementById('confirmDialog').classList.remove('hidden')
+                        return 'dialog'
                     }
                     else{
                         error_message(x.error)
+                        console.log(9901)
+                        return 'error';
                     }
                 
                 })
             })
-            get_payment_status(name)
+            
+            console.log('why?');
 
         }
+        
 
-        function button_click() {
-            console.log('update')
+        async function button_click() {
+            try{
+                console.log('update3')
+                name = document.getElementById('name').value;
+                bday = document.getElementById('birthday').value;
+                // gender = document.getElementById('gender').value
+                gender = document.querySelector('input[name="gender"]:checked').value;
+                // race = document.getElementById('race').value
+                race = document.querySelector('input[name="race"]:checked').value;
+                // ws = document.getElementById('ws').value
+                ws = document.querySelector('input[name="ws"]:checked').value;
+                stat = await upload_swimmer(name, bday, race, gender,ws,false);
+            }
+            catch{
+                error_message('Error')
+            }
+        
+            // console.log(stat)
+            // if(stat === 'success'){
+            //     clearRadioButtons()
+
+            //     document.getElementById('name').value = ''
+            //     document.getElementById('birthday').value = ''
+            //     // document.getElementById('gender').value = ''
+            //     // document.getElementById('race').value = ''
+            //     document.getElementById('searchBar').value = ''
+            //     // document.getElementById('ws').value = ''
+            // }
+        }
+        async function button_click2() {
+            console.log('update3')
             name = document.getElementById('name').value;
             bday = document.getElementById('birthday').value;
             // gender = document.getElementById('gender').value
@@ -522,15 +603,9 @@
             race = document.querySelector('input[name="race"]:checked').value;
             // ws = document.getElementById('ws').value
             ws = document.querySelector('input[name="ws"]:checked').value;
-            upload_swimmer(name, bday, race, gender,ws)
-            clearRadioButtons()
-
-            document.getElementById('name').value = ''
-            document.getElementById('birthday').value = ''
-            // document.getElementById('gender').value = ''
-            // document.getElementById('race').value = ''
-            document.getElementById('searchBar').value = ''
-            // document.getElementById('ws').value = ''
+            stat = await upload_swimmer(name, bday, race, gender,ws,true);
+            document.getElementById('confirmDialog').classList.add('hidden')
+            
         }
 
         const searchBar = document.getElementById("searchBar");
