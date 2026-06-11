@@ -1014,11 +1014,24 @@ app.post("/users", async (req, res) => {
       temp = await get_bib_num(race);
 
       const bib_num1 = await incrementRaceCounter(race);
-      console.log('F',bib_num1)
+      console.log('F2',bib_num1)
       // total_swimmers = temp.num_swimmers;
       // const newPrimaryUser = new PrimaryUser({ name, birthday, race, gender,bib_num,swim_time });
       // await newPrimaryUser.save();
       const user1 = await PrimaryUser.findOne({ name });
+      if(user1){
+        console.log('XXX',user1)
+        if(req.body.sure){
+
+        }
+        else{
+          res.status(202).send({ message: "Are you sure?."});
+          return
+        }
+      }
+      else{
+        console.log('Y')
+      }
       const sp_ = await SeasonPass.findOne({ name });
       if(sp_){
         let reg_type;
@@ -1031,6 +1044,7 @@ app.post("/users", async (req, res) => {
           console.log(user)
         }
         else{
+          console.log('user1',user1)
           reg_type = 'Day of'
           sp = true
           // bib_num = await incrementRaceCounter(race);
