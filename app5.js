@@ -824,6 +824,7 @@ app.get('/hamburger.css', (req, res) => {
 // });
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/img', express.static(path.join(__dirname, 'img')));
 
 // Serve JavaScript files
 router.get('/js/:filename', async (req, res) => {
@@ -1199,6 +1200,44 @@ app.patch("/users/swim-time", async (req, res) => {
     }
   });
 
+  // update users 
+  app.patch("/users/update", async (req, res) => {
+    cookie = req.cookies['rnr_cookie']
+    if(!(await check_cookie(cookie,1))){ // admin only
+      res.status(403).json({'message':'forbidden'})
+      return
+    }
+    const { bib_num, time, race } = req.body;
+  
+    if (!bib_num ) {
+      return res.status(400).send({ error: "bib_num is required" });
+    }
+  
+    try {
+      updated = {}
+      if(race){updated.race = race}
+      if(time){updated.time = time}
+      // Find and update the user by bib_num
+      const updatedUser = await PrimaryUser.findOneAndUpdate(
+        { bib_num },
+        { swim_time: time, race: race },
+        { new: true } // Return the updated document
+      );
+  
+      if (!updatedUser) { 
+        return res.status(404).send({ error: "User with this bib_num not found." });
+      }
+  
+      res.status(200).send({
+        message: "Swim time updated successfully.",
+        user: updatedUser,
+      });
+    } catch (error) {
+      res.status(500).send({ error: "Internal Server Error", details: error });
+      return
+    }
+  });
+
 // get all previous swimmers
 app.get('/allswimmers', async (req, res) => {
     cookie = req.cookies['rnr_cookie']
@@ -1455,3 +1494,4 @@ else{
     console.log(`Server is running on http://localhost:${PORT}`);
   });
 }
+
