@@ -100,7 +100,7 @@ return raceCategories.map(race => {
 });
 }
 
-function displayResults(data) {
+function displayResults(data,admin) {
     const resultsContainer = document.getElementById("results");
     resultsContainer.innerHTML = "";
 
@@ -135,6 +135,7 @@ function displayResults(data) {
                         <th>Div. Place</th>
                         <th>Fem Place</th>
                         <th>NWS</th>
+                        ${admin ? '<th></th>': ''}
                     </tr>
                 </thead>
                 <tbody>
@@ -150,6 +151,7 @@ function displayResults(data) {
                             <td>${entry.division_place}</td>
                             <td>${entry.gender === "F" ? entry.fem_place : "-"}</td>
                             <td>${entry.ws ==='NWS' ? 'X': ''}</td>
+                            ${admin ? '<td><button onclick="open_edit_dialog(\''+entry.bib_num+'\',\''+entry.race+'\',\''+format_time(entry.swim_time)+'\')">edit</button></td>': ''}
                         </tr>
                     `).join("")}
                 </tbody>
