@@ -8,7 +8,12 @@
     <link rel="stylesheet" href="css/table.css">
     <script src="js/hamburger.js"></script>
     <style>
-        button {
+        button{
+            background: none;
+            border: none;
+            color: white;
+        }
+        .saveButton button {
             background: #ff6b6b;
             border: none;
             padding: 15px 30px;
@@ -18,7 +23,7 @@
             color: white;
             transition: background 0.3s;
         }
-        button:hover {
+        .saveButton button:hover {
             background: #ff4757;
         }
         .hidden { display: none; }
@@ -169,13 +174,39 @@
         <div></div>
     </div>
     <div></div>
-    <button id="saveBtn">Save Race Results</button>
+    <div class="saveButton"><button id="saveBtn">Save Race Results</button></div>
     <div id="confirmDialog" class="dialog hidden">
         <p>Publish Race Resultss</p>
         <label>Race Name</label>
         <input id="raceName" value="">
         <button id="confirmEnd" onclick="publishRaceResults()">Publish</button>
         <button id="cancelEnd" onclick='document.getElementById("confirmDialog").classList.toggle("hidden")'>Cancel</button>
+    </div>
+    <div id="editDialog" class="dialog hidden">
+        <p>Edit</p>
+        <label>Race Time</label>
+        <input id="editTime" value="">
+        <input id="bibNumHidden" type="hidden">
+        <form style="display: flex; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+              500m
+              <input id="edit500m" type="radio" name="race" style="margin: 60;" value="500m">
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+              1000m
+              <input id="edit1000m" type="radio" name="race" style="margin: 10;" value="1000m">
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                1 Mile
+                <input id="edit1mile" type="radio" name="race" style="margin: 10;" value="1mile">
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5em; white-space: nowrap;">
+                Biath
+                <input id="editbiath" type="radio" name="race" style="margin: 10;" value="biath">
+            </div>
+        </form>
+        <button id="confirmEnd" onclick="publishEdit()">Edit</button>
+        <button id="cancelEnd" onclick='close_edit_dialog()'>Cancel</button>
     </div>
     <!-- Side Menu -->
     <div class="side-menu">
@@ -192,7 +223,46 @@
     <script src="js/race_results.js"></script>
 
     <script>
-        
+        function open_edit_dialog(bib_num,race,time){
+            document.getElementById('editDialog').classList.toggle('hidden')
+            document.getElementById('editTime').value = time;
+            document.getElementById('edit'+race).checked = true;
+            document.getElementById('bibNumHidden').value = bib_num;
+        }
+        function hms2s(time){
+            if(time==='DNF'){
+                return ''
+            }
+            l = time.split(/[hms]/)
+            res = parseInt(l[0])*60*60 + parseInt(l[1])*60 + parseInt(l[2])
+            return res
+        }
+        async function edit_race(bib_num,time,race) {
+            return fetch('/users/update', {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 'time': time, 'bib_num':bib_num, 'race':race }),
+            });
+        }
+        function close_edit_dialog(){
+            document.getElementById('editDialog').classList.toggle('hidden')
+        }
+        async function publishEdit(){
+            race = null;
+            if (document.getElementById('edit500m').checked){race='500m'}
+            if (document.getElementById('edit1000m').checked){race='1000m'}
+            if (document.getElementById('edit1mile').checked){race='1mile'}
+            if (document.getElementById('editbiath').checked){race='biath'}
+            time = document.getElementById('editTime').value
+            time = hms2s(time)
+            bib_num = document.getElementById('bibNumHidden').value
+            await edit_race(bib_num,time,race)
+            close_edit_dialog()
+            location.reload()
+
+        }
         function publishRaceResults(){
             input = document.getElementById('raceName').value;
             fetch('/upload_race_results', {
@@ -210,7 +280,17 @@
         document.addEventListener("DOMContentLoaded", () => {
             fetch('/currentswimmers').then(x=>{
                 x.json().then(dummyData=>{
-                    displayResults(dummyData);
+                    fetch('/test').then(x=>{
+                        x.json().then(x=>{
+                            if(x.message === 'OK'){
+                                displayResults(dummyData,true);
+                            }
+                            else{
+                                displayResults(dummyData,false);
+                            }
+                        })
+                    })
+                    // displayResults(dummyData,true);
                 })
             })
             // displayResults(dummyData);
